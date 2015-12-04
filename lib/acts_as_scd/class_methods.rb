@@ -41,15 +41,18 @@ module ActsAsScd
     end
 
     def identity_column_sql(table_alias=nil)
-      %{"#{table_alias || table_name}"."#{IDENTITY_COLUMN}"}
+      # %{#{ActiveRecord::Base.connection.quote_table_name(table_alias || table_name)}.#{ActiveRecord::Base.connection.quote_column_name(IDENTITY_COLUMN)}}
+      %{#{connection.quote_table_name(table_alias || table_name)}.#{connection.quote_column_name(IDENTITY_COLUMN)}}
     end
 
     def effective_from_column_sql(table_alias=nil)
-      %{"#{table_alias || table_name}"."#{START_COLUMN}"}
+      # %{#{ActiveRecord::Base.connection.quote_table_name(table_alias || table_name)}.#{ActiveRecord::Base.connection.quote_column_name(START_COLUMN)}}
+      %{#{connection.quote_table_name(table_alias || table_name)}.#{connection.quote_column_name(START_COLUMN)}}
     end
 
     def effective_to_column_sql(table_alias=nil)
-      %{"#{table_alias || table_name}"."#{END_COLUMN}"}
+      # %{#{ActiveRecord::Base.connection.quote_table_name(table_alias || table_name)}.#{ActiveRecord::Base.connection.quote_column_name(END_COLUMN)}}
+      %{#{connection.quote_table_name(table_alias || table_name)}.#{connection.quote_column_name(END_COLUMN)}}
     end
 
     def effective_date(d)

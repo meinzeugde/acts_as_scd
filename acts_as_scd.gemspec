@@ -5,9 +5,9 @@ require "acts_as_scd/version"
 Gem::Specification.new do |s|
   s.name        = "acts_as_scd"
   s.version     = ActsAsScd::VERSION
-  s.authors     = ["Javier Goizueta"]
-  s.email       = ["jgoizueta@gmail.com"]
-  s.homepage    = "https://github.com/jgoizueta/acts_as_scd"
+  s.authors     = ["Javier Goizueta", "Matteo Esche"]
+  s.email       = ["jgoizueta@gmail.com", "webmaster@meinzeug.de"]
+  s.homepage    = "https://github.com/meinzeugde/acts_as_scd"
   s.summary     = "Support for models that act as Slowly Changing Dimensions"
   s.description = "SCD models have identities and multiple time-limited iterations (revisions) per identity"
   s.license     = "MIT"

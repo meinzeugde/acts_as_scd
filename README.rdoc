@@ -190,3 +190,22 @@ In order to make a model act as SCD you'll have to manually modify the appropria
 * Create generator to add identity to a model and generate migration
 * Test with both Rails 3 & 4
 * Release gem 1.0.0
+
+== Gem Development
+
+If you plan on forking and developing the gem, you can run tests with 'rake test'.
+
+=== Configuring Test Environment
+
+Before you can run tests you need to create a 'database.yml'.
+The following task will generate a database.yml.* for each (common) database adapter:
+
+If you want to activate the default sqlite3 adapter you simply run:
+
+    rake db:adapter:generate
+    rake db:adapter:change ADAPTER=sqlite3
+
+If you want to use the mysql2 adapter for your tests, type the following:
+
+    rake db:adapter:generate DATABASE=acts_as_scd USERNAME=root PASSWORD=yourpassword
+    rake db:adapter:change ADAPTER=mysql2

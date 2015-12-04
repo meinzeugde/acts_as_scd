@@ -1,8 +1,17 @@
 require 'test_helper'
 require 'active_record/fixtures'
 
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
-ActiveRecord::Schema.verbose = false
+adapter_type = ActiveRecord::Base.connection.adapter_name.downcase.to_sym
+case adapter_type
+  when :mysql2
+    ActiveRecord::Base.establish_connection(adapter: "mysql2")
+  when :sqlite
+    ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
+  else
+    raise NotImplementedError, "Unknown (or not yet implemented) adapter type '#{adapter_type}'"
+end
+
+ActiveRecord::Schema.verbose = true
 
 # Tests data model:
 # We'll have two models which represent geographical entities and are subject

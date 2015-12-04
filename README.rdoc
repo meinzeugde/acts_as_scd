@@ -1,7 +1,7 @@
 = Acts as SCD
 
 This gem provides SCD (Slowly Changing Dimension) behaviour for ActiveRecord models.
-The kind of SCD implemented is "Type 2" acording to http://en.wikipedia.org/wiki/Slowly_changing_dimension
+The kind of SCD implemented is "Type 2" according to http://en.wikipedia.org/wiki/Slowly_changing_dimension
 
 A model which includes this extension keeps the history of entities that change 'slowly'
 (here slowly meaning not more often than once a day). Any such entity is identified by an
@@ -32,7 +32,7 @@ other attributes of the record.
 == Identity and Iteration creation and querying
 
 Assume that we have a model @Country@ with attributes @code@, @name@, @area@, etc.
-We can attarch 'acts-as-scd' behaviour to this model using either the @acts_as_scd@ or
+We can attach 'acts-as-scd' behaviour to this model using either the @acts_as_scd@ or
 @has_identity@ methods. [FIXME: to be determined if they are going to be synonyms or not]
 
 We'll use the latter. The parameter passed to it is the type of the @identity@ column.
@@ -56,7 +56,7 @@ We would define the schema for this table:
     t.integer :effective_to, default: 99999999
   end
 
-Imagine you're in a country named Germany at a date such as 1930-01-01 (Disclaimer: no historic accuracy intented).
+Imagine you're in a country named Germany at a date such as 1930-01-01 (Disclaimer: no historic accuracy intended).
 We can create a record to represent it like so:
 
   Country.create_identity code: 'DEU', name: 'Germany', area: 357_02
@@ -109,15 +109,15 @@ breaks down the division between the countries at, say, 1990-10-03:
 
 == Work in progresss
 
-You can tae a look at the tests while this is being developed...
+You can take a look at the tests while this is being developed...
 
 == Associations
 
-We'll use anoter model, City, to show how to work with associations between SCD models.
+We'll use another model, City, to show how to work with associations between SCD models.
 
 ...
 
-== BLockUpdate
+== BlockUpdate
 
 In some cases, modification of SCD tables is performed not on individual records, but
 on the whole table at a given date. A typical example of this is an industrial classification
@@ -127,7 +127,7 @@ system such as SIC for the US (or NAICS for North America, UKSIC, CNAE --Spain--
 
 == Reference
 
-=== A. Declaration (methods introduced in ActiveRecord Base)
+=== A. Declaration (methods introduced in ActiveRecord::Base)
 
 === B. Methods gained by SCD models
 
@@ -142,8 +142,45 @@ system such as SIC for the US (or NAICS for North America, UKSIC, CNAE --Spain--
 ==== CRUD of Identities/Iterations
 
 ==== Instance methods
+
 Related iterations, ...
 
+=== C. Migration
+
+In order to make a model act as SCD you'll have to manually modify the appropriate migration, e.g.
+
+    class AddScdToYourTable < ActiveRecord::Migration
+      def up
+        add_column :your_table, :identity, :integer, :limit => 11
+        add_column :your_table, :effective_from, :integer, :default =>  0
+        add_column :your_table, :effective_to, :integer, :default =>  99999999
+        add_index :your_table, :identity
+        add_index :your_table, :effective_from
+        add_index :your_table, :effective_to
+        add_index :your_table, [:effective_from, :effective_to]
+
+        set_identities
+      end
+
+      def down
+        remove_column :your_table, :identity
+        remove_column :your_table, :effective_from
+        remove_column :your_table, :effective_to
+        remove_index :your_table, :identity
+        remove_index :your_table, :effective_from
+        remove_index :your_table, :effective_to
+        remove_index :your_table, [:effective_from, :effective_to]
+      end
+
+      def set_identities
+        table = YourTable.all
+        table_count = table.count
+        table.each_with_index do |row, index|
+          row.update_attribute(:identity,row.alias)
+          puts "#{index}/#{table_count}: added identity #{row.identity}"
+        end
+      end
+    end
 
 == TODO
 
@@ -153,5 +190,3 @@ Related iterations, ...
 * Create generator to add identity to a model and generate migration
 * Test with both Rails 3 & 4
 * Release gem 1.0.0
-
-

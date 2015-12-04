@@ -22,4 +22,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'modalsupport', "~> 0.9.2"
 
   s.add_development_dependency "sqlite3"
+  s.add_development_dependency "mysql2"
+  s.add_development_dependency "activerecord-mysql2-adapter"
 end

@@ -6,6 +6,8 @@ end
 
 require 'rdoc/task'
 
+require File.expand_path('../test/lib/database_adapter.rb', __FILE__)
+
 RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title    = 'ActsAsScd'
@@ -13,9 +15,6 @@ RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
-
-
-
 
 Bundler::GemHelper.install_tasks
 
@@ -25,7 +24,7 @@ Rake::TestTask.new(:test) do |t|
   t.libs << 'lib'
   t.libs << 'test'
   t.pattern = 'test/**/*_test.rb'
-  t.verbose = false
+  t.verbose = true
 end
 
 

@@ -7,6 +7,7 @@ end
 require 'rdoc/task'
 
 require File.expand_path('../test/lib/database_adapter.rb', __FILE__)
+require File.expand_path('../test/lib/database_migrations.rb', __FILE__)
 
 RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = 'rdoc'

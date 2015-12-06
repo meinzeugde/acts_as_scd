@@ -44,7 +44,7 @@ namespace :db do
         output.close
 
         puts "SUCCESS: #{output_file} written, current database adapter for 'rake test' is set to #{database_adapter}."
-        puts "...Don't forget to create the appropriate databases with 'rake db:create'." if database_adapter != 'sqlite3'
+        puts "...Don't forget to create the test database with 'rake db:create DATABASE_ENV=test'." if database_adapter != 'sqlite3'
       else
         puts "ERROR: Template File '#{template_file}' not found. Nothing written. Please run 'rake db:adapter:generate'."
       end

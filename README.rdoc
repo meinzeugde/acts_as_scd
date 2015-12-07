@@ -193,7 +193,13 @@ In order to make a model act as SCD you'll have to manually modify the appropria
 
 == Gem Development
 
-If you plan on forking and developing the gem, you can run tests with 'rake test'.
+If you plan on forking and developing the gem, you'll have to do some additional steps:
+
+=== Install Gems
+
+Just run...
+
+    bundle install
 
 === Configuring Test Environment
 
@@ -209,7 +215,11 @@ If you want to use the mysql2 adapter for your tests, type the following:
 
     rake db:adapter:generate DATABASE=acts_as_scd USERNAME=root PASSWORD=yourpassword
     rake db:adapter:change ADAPTER=mysql2
-
-In case you didn't create a test database for the mysql2 adapter, run the following
-
     rake db:create DATABASE_ENV=test
+
+=== Testing
+
+Just run...
+
+    rake test
+

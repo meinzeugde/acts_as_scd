@@ -1,14 +1,20 @@
 require 'test_helper'
 require 'active_record/fixtures'
 
-adapter_type = ActiveRecord::Base.connection.adapter_name.downcase.to_sym
-case adapter_type
-  when :mysql2
-    ActiveRecord::Base.establish_connection(adapter: "mysql2")
-  when :sqlite
-    ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
+@config = YAML.load_file(File.join(Dir.pwd, "test", "dummy", "config", "database.yml"))['test']
+
+case @config['adapter']
+  when 'mysql2'
+    ActiveRecord::Base.establish_connection(adapter: @config['adapter'],
+                                            :host     => @config['host'],
+                                            :username => @config['username'],
+                                            :password => @config['password'],
+                                            :database => @config['database'])
+  when 'sqlite3'
+    ActiveRecord::Base.establish_connection(adapter: @config['adapter'],
+                                            database: ":memory:")
   else
-    raise NotImplementedError, "Unknown (or not yet implemented) adapter type '#{adapter_type}'"
+    raise NotImplementedError, "Unknown (or not yet implemented) adapter type '#{@config['adapter']}'"
 end
 
 ActiveRecord::Schema.verbose = true
@@ -45,7 +51,7 @@ ActiveRecord::Schema.define do
     t.integer :effective_to, default: 99999999
     t.string  :name
     t.float   :area
-    t.string  :country_identity, limit: 2
+    t.string  :country_identity, limit: 3
   end
 
   add_index :cities, :identity

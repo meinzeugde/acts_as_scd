@@ -1,28 +1,28 @@
 caledonia:
-  name: 'Eternal Caledonia'
-  code: 'CL'
-  identity: 'CL'
+  name: Eternal Caledonia
+  code: CL
+  identity: CL
   effective_from: 0
   effective_to: 99999999
 
 changedonia_first:
-  name: 'Volatile Changedonia'
-  code: 'CG'
-  identity: 'CG'
+  name: Volatile Changedonia
+  code: CG
+  identity: CG
   effective_from: 0
   effective_to: 20140302
 
 changedonia_second:
-  name: 'Volatile Changedonia'
-  code: 'CG'
-  identity: 'CG'
+  name: Volatile Changedonia
+  code: CG
+  identity: CG
   effective_from: 20140302
   effective_to: 20140507
 
 changedonia_third:
-  name: 'Volatile Changedonia'
-  code: 'CG'
-  identity: 'CG'
+  name: Volatile Changedonia
+  code: CG
+  identity: CG
   effective_from: 20140507
   effective_to: 99999999
 

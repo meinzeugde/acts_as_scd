@@ -28,8 +28,6 @@ GEM
       activemodel (= 4.1.1)
       activesupport (= 4.1.1)
       arel (~> 5.0.0)
-    activerecord-mysql2-adapter (0.0.3)
-      mysql2
     activesupport (4.1.1)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
@@ -95,9 +93,8 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
-  activerecord-mysql2-adapter
   acts_as_scd!
-  mysql2
+  mysql2 (~> 0.3.17)
   sqlite3
   tzinfo-data
 

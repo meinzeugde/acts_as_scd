@@ -10,3 +10,4 @@ test/dummy/config/database.yml
 test/dummy/config/database.yml.*
 test/dummy/.sass-cache
 rdoc/
+Gemfile.lock

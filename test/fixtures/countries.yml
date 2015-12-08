@@ -81,3 +81,11 @@ scotland:
   identity: SCO
   effective_from: 20140918
   effective_to: 99999999
+
+centuria:
+  code: CTA
+  name: Centuria
+  area: 100_100
+  identity: CTA
+  effective_from: 20151201
+  effective_to: 21151201

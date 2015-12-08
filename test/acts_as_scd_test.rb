@@ -6,12 +6,20 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
   test "Models can act as SCD" do
     assert_equal countries(:caledonia), Country.find_by_identity('CL', Date.today)
+    assert_equal countries(:caledonia), Country.at_present.where(:identity => 'CL').first
+    assert_equal countries(:caledonia), Country.where(:identity => 'CL').at_present.first
     assert_equal Date.new(2014,3,2), countries(:changedonia_first).effective_to_date
     assert_equal Date.new(2014,3,2), countries(:changedonia_second).effective_from_date
     assert_equal countries(:changedonia_third), countries(:changedonia_first).current
     assert_equal countries(:changedonia_third), countries(:changedonia_second).current
     assert_equal countries(:changedonia_second), countries(:changedonia_first).successor
     assert_equal countries(:changedonia_third), countries(:changedonia_second).successor
+  end
+
+  test "Method 'current' and 'at_present' is not the same" do
+    assert_nil Country.where(:identity => 'CTA').current.first
+    assert_equal Country.where(:identity => 'CTA').at_present.first,
+                 countries(:centuria)
   end
 
   test "Identities have iterations" do
@@ -414,7 +422,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal 5, Country.at(Date.new(2014,9,18)).count
     assert_equal 5, Country.at(Date.new(2015,1,1)).count
 
-    assert_equal 6, Country.ended.count
+    assert_equal 7, Country.ended.count
     assert_equal ddr, Country.ended.where(identity: 'DDR').first
 
     assert_equal [de1, de2, de3], Country.all_of('DEU')
@@ -424,7 +432,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     # assert_equal 1, Country.ended.latest.count
     # assert_equal 1, Country.terminated.count
     # assert_equal 1, Country.superseded.count
-end
+  end
 
   test "Model query methods that return objects" do
 
@@ -449,7 +457,7 @@ end
 
     c = Country.scoped
 
-    assert_equal %w(CG CL DDR DEU GBR SCO), Country.ordered_identities
+    assert_equal %w(CG CL CTA DDR DEU GBR SCO), Country.ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.current.ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.at(Date.new(2015,1,1)).ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.at(Date.new(2014,9,18)).ordered_identities
@@ -463,7 +471,7 @@ end
     assert_equal %w(CG CL DEU GBR), Country.at(Date.new(1949,10,6)).ordered_identities
     assert_equal %w(CG CL DEU GBR), Country.at(Date.new(1940,1,1)).ordered_identities
 
-    assert_equal %w(CG CL DDR DEU GBR SCO), Country.ordered_identities
+    assert_equal %w(CG CL CTA DDR DEU GBR SCO), Country.ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.current.ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.identities_at(Date.new(2015,1,1)).sort
     assert_equal %w(CG CL DEU GBR SCO), Country.identities_at(Date.new(2014,9,18)).sort
@@ -490,7 +498,7 @@ end
     assert_equal [ActsAsScd::Period[0, 19491007], ActsAsScd::Period[19491007, 19901003], ActsAsScd::Period[19901003, 99999999]],
                  Country.where(identity: 'DEU').effective_periods
     assert_equal [[0,19491007], [0, 20140302], [0, 20140918], [0, 99999999], [19491007, 19901003], [19901003, 99999999],
-                  [20140302, 20140507], [20140507, 99999999], [20140918, 99999999]].map{|p| ActsAsScd::Period[*p]},
+                  [20140302, 20140507], [20140507, 99999999], [20140918, 99999999], [20151201, 21151201]].map{|p| ActsAsScd::Period[*p]},
                  Country.effective_periods
 
   end

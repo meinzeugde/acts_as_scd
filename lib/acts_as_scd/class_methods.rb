@@ -36,8 +36,16 @@ module ActsAsScd
       at(date).identities
     end
 
+    def identities_at_present
+      at(Date.today).identities
+    end
+
     def current_identities
       current.identities
+    end
+
+    def at_present
+      at(Date.today)
     end
 
     def identity_column_sql(table_alias=nil)

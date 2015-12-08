@@ -18,6 +18,10 @@ module ActsAsScd
     end
   end
 
+  def at_present
+    self.class.find_by_identity(identity, Date.today)
+  end
+
   def successor
     return nil if effective_to==END_OF_TIME
     self.class.where(identity:identity, effective_from:effective_to).first

@@ -22,6 +22,26 @@ class ActsAsScdTest < ActiveSupport::TestCase
                  countries(:centuria)
   end
 
+  test "Method 'present_or' for controller methods with optional date params" do
+    params = {}
+    assert_equal Country.where(:identity => 'CTA').at_present_or(params[:date]).first,
+                 Country.where(:identity => 'CTA').at_present.first
+
+    params = {:date => '2015-11-30'}
+    assert_nil Country.where(:identity => 'CTA').at_present_or(params[:date]).first
+
+    params = {:date => '2015-12-01'}
+    assert_equal Country.where(:identity => 'CTA').at_present_or(params[:date]).first,
+                 countries(:centuria)
+
+    params = {:date => '2115-11-30'}
+    assert_equal Country.where(:identity => 'CTA').at_present_or(params[:date]).first,
+                 countries(:centuria)
+
+    params = {:date => '2115-12-01'}
+    assert_nil Country.where(:identity => 'CTA').at_present_or(params[:date]).first
+  end
+
   test "Identities have iterations" do
     caledonia = countries(:caledonia)
     assert_equal 99999999, caledonia.effective_to

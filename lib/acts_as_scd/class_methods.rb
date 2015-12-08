@@ -48,6 +48,14 @@ module ActsAsScd
       at(Date.today)
     end
 
+    def at_present_or(date=nil)
+      if date.nil?
+        at(Date.today)
+      else
+        at(date)
+      end
+    end
+
     def identity_column_sql(table_alias=nil)
       # %{#{ActiveRecord::Base.connection.quote_table_name(table_alias || table_name)}.#{ActiveRecord::Base.connection.quote_column_name(IDENTITY_COLUMN)}}
       %{#{connection.quote_table_name(table_alias || table_name)}.#{connection.quote_column_name(IDENTITY_COLUMN)}}

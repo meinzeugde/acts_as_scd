@@ -36,7 +36,7 @@ module ActsAsScd
       at(date).identities
     end
 
-    def identities_at_present
+    def present_identities
       at(Date.today).identities
     end
 
@@ -168,6 +168,20 @@ module ActsAsScd
         send(:"#{assoc_singular}_iterations").scoped.at(date)
       end
 
+      # children at today
+      define_method :"#{assoc}_at_present" do
+        send(:"#{assoc_singular}_iterations").scoped.at(Date.today) # scoped necessary here to avoid delegation to Array
+      end
+
+      # children at today or some date
+      define_method :"#{assoc}_at_present_or" do |date=nil|
+        if date.nil?
+          send(:"#{assoc_singular}_iterations").scoped.at(Date.today) # scoped necessary here to avoid delegation to Array
+        else
+          send(:"#{assoc_singular}_iterations").scoped.at(date) # scoped necessary here to avoid delegation to Array
+        end
+      end
+
       # all children identities
       define_method :"#{assoc_singular}_identities" do
         # send(:"#{assoc}_iterations").select("DISTINCT #{other_model.identity_column_sql}").reorder(other_model.identity_column_sql).pluck(:identity)
@@ -187,6 +201,11 @@ module ActsAsScd
         # send(assoc).select("DISTINCT #{other_model.identity_column_sql}").reorder(other_model.identity_column_sql).pluck(:identity)
         # other_mode.unscoped.where(fk=>send(pk)).current_identities
         send(:"#{assoc_singular}_iterations").current_identities
+      end
+
+      # present children identities
+      define_method :"#{assoc}_present_identities" do
+        send(:"#{assoc}_iterations").present_identities
       end
 
     end

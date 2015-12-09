@@ -659,4 +659,33 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
   end
 
+  test "Controller methods - typical index" do
+    # find all present (today's) countries (if params don't have a specific date)
+    params = {}
+    assert_equal countries(:caledonia,:changedonia_third,:centuria,:de3,:uk2,:scotland).sort_by(&:name),
+                 Country.at_present_or(params[:date]).order(:name)
+
+    # find all countries with a specific date
+    params = {:date => '19900101'}
+    assert_equal countries(:caledonia,:changedonia_first,:de2,:ddr,:uk1).sort_by(&:name),
+                 Country.at_present_or(params[:date]).order(:name)
+
+  end
+
+  test "Controller methods - typical show" do
+    params = {:country_id => countries(:de3).id}
+    # find present (today's) cities (if params don't have a specific date)
+    assert_equal cities(:berlin3,:hamburg,:leipzig_3).sort_by(&:name),
+                 Country.find_by_id(params[:country_id]).cities_at_present_or(params[:date]).order(:name)
+
+    # find associated commercial association (no SCD involved)
+    assert_equal commercial_associations(:bitkom),
+                 Country.find_by_id(params[:country_id]).commercial_association
+
+    params = {:country_id => countries(:de3).id, :date => '19900101'}
+    # find cities with a specific date
+    assert_equal cities(:berlin2,:hamburg).sort_by(&:name),
+                 Country.find_by_id(params[:country_id]).cities_at_present_or(params[:date]).order(:name)
+  end
+
 end

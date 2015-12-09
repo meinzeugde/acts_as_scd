@@ -79,7 +79,7 @@ ActiveRecord::Schema.define do
 
   create_table :commercial_delegates, :force => true do |t|
     t.string   :name
-    t.string   :country_identity, limit: 2
+    t.string   :country_identity, limit: 3
   end
 
 end

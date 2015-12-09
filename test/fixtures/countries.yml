@@ -49,6 +49,7 @@ de3:
   identity: DEU
   effective_from: 19901003
   effective_to: 99999999
+  commercial_association: bitkom
 
 ddr:
   code: DDR

@@ -126,11 +126,14 @@ module ActsAsScd
     def reference_date
       if @start <= START_OF_TIME
         if @end >= END_OF_TIME
+          # return present date (today) if 'effective_from' = 0 and 'effective_to' = 99999999
           DateValue[Date.today].value
         else
+          # return end date of a period if 'effective_from' = 0 and 'effective_to' < 99999999
           DateValue[DateValue[@end].to_date - 1].value
         end
       else
+        # return specific start date if 'effective_from' > 0
         @start
       end
     end

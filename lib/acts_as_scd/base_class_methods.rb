@@ -49,7 +49,7 @@ module ActsAsScd
     # Association to be used in a parent class which has children which have identities
     # (the parent class is referenced by id and may not have identity)
     # The inverse association should be belongs_to
-    def has_many_identities(assoc, options)
+    def has_many_identities(assoc, options={})
       fk =  options[:foreign_key] || :"#{model_name.to_s.underscore}_id"
       pk = primary_key
       other_model_name = options[:class_name] || assoc.to_s.singularize.camelize

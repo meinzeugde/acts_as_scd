@@ -262,9 +262,21 @@ module ActsAsScd
       periods.map{|p| Period[p.effective_from, p.effective_to]}
     end
 
+    def effective_periods_formatted(strftime_format='%Y-%m-%d',*args)
+      scoped.effective_periods(*args).map{|p| p.formatted(strftime_format)}
+    end
+
     # def effective_spans
     #   # select all distinct effective_from, and effective_to, order, return in pairs
     # end
+
+    def reference_dates(*args)
+      effective_periods(*args).map{|p| p.reference_date }
+    end
+
+    def reference_dates_formatted(strftime_format='%Y-%m-%d',*args)
+      effective_periods(*args).map{|p| p.reference_date_formatted(strftime_format) }
+    end
 
     # Most recent iteration (terminated or not)
     def latest_of(identity)

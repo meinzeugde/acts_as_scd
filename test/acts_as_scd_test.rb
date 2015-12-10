@@ -688,4 +688,70 @@ class ActsAsScdTest < ActiveSupport::TestCase
                  Country.find_by_id(params[:country_id]).cities_at_present_or(params[:date]).order(:name)
   end
 
+  test "Periods - Standard methods" do
+    germany = Country.where(identity: 'DEU')
+    periods = germany.effective_periods
+
+    assert_equal [ActsAsScd::Period[0, 19491007], ActsAsScd::Period[19491007, 19901003], ActsAsScd::Period[19901003, 99999999]],
+                 periods
+    assert_equal periods,
+                 Country.effective_periods(identity: 'DEU')
+
+    assert periods[2].valid?
+    assert !periods[2].invalid?
+    assert periods[2].limited_start?
+    assert !periods[2].unlimited_start?
+    assert periods[2].unlimited_end?
+    assert !periods[2].limited_end?
+    assert periods[2].limited?
+    assert !periods[2].unlimited?
+    assert periods[2].at_present?
+    assert !periods[2].at?(Date.new(1949,10,7))
+
+    assert_equal 19491006,
+                 periods[0].reference_date
+    assert_equal 19491007,
+                 periods[1].reference_date
+    assert_equal 19901003,
+                 periods[2].reference_date
+    assert_equal [19491006,19491007,19901003],
+                 germany.reference_dates
+  end
+
+  test "Periods - Formatted methods" do
+    germany = Country.where(identity: 'DEU')
+    periods = germany.effective_periods
+
+    assert_equal [{:start => '0000-01-01', :end => '1949-10-07'},{:start => '1949-10-07', :end => '1990-10-03'},{:start => '1990-10-03', :end => '9999-12-31'}],
+                 germany.effective_periods_formatted
+    assert_equal germany.effective_periods_formatted,
+                 Country.effective_periods_formatted('%Y-%m-%d',identity: 'DEU')
+
+    assert_equal [{:start => '01.01.0000', :end => '07.10.1949'},{:start => '07.10.1949', :end => '03.10.1990'},{:start => '03.10.1990', :end => '31.12.9999'}],
+                 germany.effective_periods_formatted('%d.%m.%Y')
+    assert_equal germany.effective_periods_formatted('%d.%m.%Y'),
+                 Country.effective_periods_formatted('%d.%m.%Y',identity: 'DEU')
+
+    assert_equal ['1949-10-06','1949-10-07','1990-10-03'],
+                 germany.reference_dates_formatted
+    assert_equal germany.reference_dates_formatted,
+                 Country.reference_dates_formatted('%Y-%m-%d',identity: 'DEU')
+
+    assert_equal ['06.10.1949','07.10.1949','03.10.1990'],
+                 germany.reference_dates_formatted('%d.%m.%Y')
+    assert_equal germany.reference_dates_formatted('%d.%m.%Y'),
+                 Country.reference_dates_formatted('%d.%m.%Y',identity: 'DEU')
+
+    assert_equal({:start => '0000-01-01', :end => '1949-10-07'},
+                 periods[0].formatted)
+    assert_equal({:start => '01.01.0000', :end => '07.10.1949'},
+                 periods[0].formatted('%d.%m.%Y'))
+
+    assert_equal '1949-10-06',
+                 periods[0].reference_date_formatted
+    assert_equal '06.10.1949',
+                 periods[0].reference_date_formatted('%d.%m.%Y')
+
+  end
+
 end

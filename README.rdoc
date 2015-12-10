@@ -137,6 +137,88 @@ system such as SIC for the US (or NAICS for North America, UKSIC, CNAE --Spain--
 
 === B. Methods gained by SCD models
 
+==== Periods
+
+===== Standard methods
+
+Let's assume there is a Country which got split up in the year 1949 and reunited in 1990.
+
+    germany = Country.where(identity: 'DEU')
+
+Let's retrieve all periods of this Country.
+
+    periods = germany.effective_periods # ['to 1949-10-07', '1949-10-07 - 1990-10-03', 'since 1990-10-03']
+
+Another way is to hand over the arguments of +where+ directly to +effective periods+.
+
+    periods = Country.effective_periods(identity: 'DEU') # ['to 1949-10-07', '1949-10-07 - 1990-10-03', 'since 1990-10-03']
+
+The entries within the array instances of +ActsAsScd::Period+.
+This allows for some detailed checks on a specific period.
+Let's do some checks on the present period 'since 1990-10-03'.
+
+    periods[2].valid?                   # true
+    periods[2].invalid?                 # false
+
+    periods[2].limited_start?           # true
+    periods[2].unlimited_start?         # false
+
+    periods[2].unlimited_end?           # true
+    periods[2].limited_end?             # false
+
+    periods[2].limited?                 # true
+    periods[2].unlimited?               # false
+
+*Explanation:* Every pair are opposites of each other.
+
+Let's check if the selected period is active at the time beeing, which is '2015-12-09'.
+
+    periods[2].at_present?              # true
+
+Let's check if the selected period was active at the in '1949-10-07'.
+
+    periods[2].at? Date.new(1949,10,7)  # false
+
+Let's find out the reference dates for all periods in 2 different ways.
+
+    periods[0].reference_date           # 19491006
+    periods[1].reference_date           # 19491007
+    periods[2].reference_date           # 19901003
+
+    germany.reference_dates                     # [19491006,19491007,19901003]
+    Country.reference_dates(identity: 'DEU')
+
+*Explanation:* Primarily the reference date is the start date. If there is no start date, the previous day of the end date is used.
+
+===== Formatted methods
+
+When working with a client side framework, it's often adviced to have the periods formatted in a different way.
+First let's look at the iteration methods (the args method is shown too).
+
+    germany.effective_periods_formatted                     # [{:start => '0000-01-01', :end => '1949-10-07'},{:start => '1949-10-07', :end => '1990-10-03'},{:start => '1990-10-03', :end => '9999-12-31'}]
+    Country.effective_periods_formatted('%Y-%m-%d',identity: 'DEU')
+
+    germany.effective_periods_formatted('%d.%m.%Y')         # [{:start => '01.01.0000', :end => '07.10.1949'},{:start => '07.10.1949', :end => '03.10.1990'},{:start => '03.10.1990', :end => '31.12.9999'}]
+    Country.effective_periods_formatted('%d.%m.%Y',identity: 'DEU')
+
+    germany.reference_dates_formatted                       # ['1949-10-06','1949-10-07','1990-10-03']
+    Country.reference_dates_formatted('%Y-%m-%d',identity: 'DEU')
+
+    germany.reference_dates_formatted('%d.%m.%Y')           # ['06.10.1949','07.10.1949','03.10.1990']
+    Country.reference_dates_formatted('%d.%m.%Y',identity: 'DEU')
+
+*Attention:* When using the args method you'll have to hand over a formatting string, otherwise it defaults to '%Y-%m-%d'.
+
+The iteration methods are also available to period instances.
+
+    periods[0].formatted                                # {:start => '0000-01-01', :end => '1949-10-07'}
+    periods[0].formatted('%d.%m.%Y')                    # {:start => '01.01.0000', :end => '07.10.1949'}
+
+    periods[0].reference_date_formatted                 # '1949-10-06'
+    periods[0].reference_date_formatted('%d.%m.%Y')     # '06.10.1949'
+
+*Attention:* Keep in mind that the period checks above are not available anymore, since the array instances are Hashes.
+
 ==== Class Methods
 
 * Query methods returning (further-refinable) queries

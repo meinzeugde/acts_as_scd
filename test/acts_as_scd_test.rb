@@ -751,7 +751,32 @@ class ActsAsScdTest < ActiveSupport::TestCase
                  periods[0].reference_date_formatted
     assert_equal '06.10.1949',
                  periods[0].reference_date_formatted('%d.%m.%Y')
+  end
 
+  test "Periods - Combined Periods" do
+    germany_and_uk = Country.where('identity = ? OR identity = ?','DEU','GBR')
+
+    assert_equal [ActsAsScd::Period[0, 19491007], ActsAsScd::Period[0, 20140918], ActsAsScd::Period[19491007, 19901003], ActsAsScd::Period[19901003, 99999999], ActsAsScd::Period[20140918, 99999999]],
+                 germany_and_uk.effective_periods
+
+    assert_equal [ActsAsScd::Period[0, 19491007], ActsAsScd::Period[19491007, 19901003], ActsAsScd::Period[19901003, 20140918], ActsAsScd::Period[20140918, 99999999]],
+                 germany_and_uk.combined_periods
+
+    assert_equal [{:start => '0000-01-01', :end => '1949-10-07', :reference => '1949-10-06'},
+                  {:start => '1949-10-07', :end => '1990-10-03', :reference => '1949-10-07'},
+                  {:start => '1990-10-03', :end => '2014-09-18', :reference => '1990-10-03'},
+                  {:start => '2014-09-18', :end => '9999-12-31', :reference => '2014-09-18'},
+                 ],
+                 germany_and_uk.combined_periods_formatted
+    assert_equal germany_and_uk.combined_periods_formatted,
+                 Country.combined_periods_formatted('%Y-%m-%d','identity = ? OR identity = ?','DEU','GBR')
+
+    assert_equal [{:start => '01.01.0000', :end => '07.10.1949', :reference => '06.10.1949'},
+                  {:start => '07.10.1949', :end => '03.10.1990', :reference => '07.10.1949'},
+                  {:start => '03.10.1990', :end => '18.09.2014', :reference => '03.10.1990'},
+                  {:start => '18.09.2014', :end => '31.12.9999', :reference => '18.09.2014'}
+                 ],
+                 germany_and_uk.combined_periods_formatted('%d.%m.%Y')
   end
 
 end

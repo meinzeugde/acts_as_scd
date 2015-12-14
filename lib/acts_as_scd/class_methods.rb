@@ -272,9 +272,26 @@ module ActsAsScd
       scoped.effective_periods(*args).map{|p| p.formatted(strftime_format)}
     end
 
-    # def effective_spans
-    #   # select all distinct effective_from, and effective_to, order, return in pairs
-    # end
+    # while effective periods are just a sorted bunch of all periods with redundant dates,
+    #   combined periods have no redundant dates and combine overlapping periods if existent
+    def combined_periods(*args)
+      effective_periods = effective_periods(*args)
+      start_dates = effective_periods.map(&:start).uniq.sort
+      end_dates = effective_periods.map(&:end).uniq.sort
+      combined_dates = (start_dates + end_dates).uniq.sort
+      combined_periods = []
+
+      combined_dates.size.times.each do |idx|
+        break if combined_dates[idx+1].nil?
+        combined_periods.push(Period[combined_dates[idx],combined_dates[idx+1]])
+      end
+
+      combined_periods
+    end
+
+    def combined_periods_formatted(strftime_format='%Y-%m-%d',*args)
+      combined_periods(*args).map{|p| p.formatted(strftime_format) }.uniq
+    end
 
     def reference_dates(*args)
       effective_periods(*args).map{|p| p.reference_date }.uniq

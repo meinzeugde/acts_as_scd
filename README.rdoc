@@ -149,11 +149,11 @@ Let's retrieve all periods of this Country.
 
     periods = germany.effective_periods # ['to 1949-10-07', '1949-10-07 - 1990-10-03', 'since 1990-10-03']
 
-Another way is to hand over the arguments of +where+ directly to +effective periods+.
+Another way is to hand over the arguments of +where+ directly to +effective_periods+ .
 
     periods = Country.effective_periods(identity: 'DEU') # ['to 1949-10-07', '1949-10-07 - 1990-10-03', 'since 1990-10-03']
 
-The entries within the array instances of +ActsAsScd::Period+.
+The entries within the array instances of 'ActsAsScd::Period'.
 This allows for some detailed checks on a specific period.
 Let's do some checks on the present period 'since 1990-10-03'.
 
@@ -185,7 +185,7 @@ Let's find out the reference dates for all periods in 2 different ways.
     periods[1].reference_date           # 19491007
     periods[2].reference_date           # 19901003
 
-    germany.reference_dates                     # [19491006,19491007,19901003]
+    germany.reference_dates             # [19491006,19491007,19901003]
     Country.reference_dates(identity: 'DEU')
 
 *Explanation:* Primarily the reference date is the start date. If there is no start date, the previous day of the end date is used.
@@ -195,10 +195,14 @@ Let's find out the reference dates for all periods in 2 different ways.
 When working with a client side framework, it's often adviced to have the periods formatted in a different way.
 First let's look at the iteration methods (the args method is shown too).
 
-    germany.effective_periods_formatted                     # [{:start => '0000-01-01', :end => '1949-10-07', :reference => '1949-10-06'},{:start => '1949-10-07', :end => '1990-10-03', :reference => '1949-10-07'},{:start => '1990-10-03', :end => '9999-12-31', :reference => '1990-10-03'}]
+    germany.effective_periods_formatted                     # [{:start => '0000-01-01', :end => '1949-10-07', :reference => '1949-10-06'},
+                                                            #  {:start => '1949-10-07', :end => '1990-10-03', :reference => '1949-10-07'},
+                                                            #  {:start => '1990-10-03', :end => '9999-12-31', :reference => '1990-10-03'}]
     Country.effective_periods_formatted('%Y-%m-%d',identity: 'DEU')
 
-    germany.effective_periods_formatted('%d.%m.%Y')         # [{:start => '01.01.0000', :end => '07.10.1949', :reference => '06.10.1949'},{:start => '07.10.1949', :end => '03.10.1990', :reference => '07.10.1949'},{:start => '03.10.1990', :end => '31.12.9999', :reference => '03.10.1990'}]
+    germany.effective_periods_formatted('%d.%m.%Y')         # [{:start => '01.01.0000', :end => '07.10.1949', :reference => '06.10.1949'},
+                                                            #  {:start => '07.10.1949', :end => '03.10.1990', :reference => '07.10.1949'},
+                                                            #  {:start => '03.10.1990', :end => '31.12.9999', :reference => '03.10.1990'}]
     Country.effective_periods_formatted('%d.%m.%Y',identity: 'DEU')
 
     germany.reference_dates_formatted                       # ['1949-10-06','1949-10-07','1990-10-03']
@@ -218,6 +222,37 @@ The iteration methods are also available to period instances.
     periods[0].reference_date_formatted('%d.%m.%Y')     # '06.10.1949'
 
 *Attention:* Keep in mind that the period checks above are not available anymore, since the array instances are Hashes.
+
+===== Periods - Combined Periods
+
+The method +effective_periods+ will return any period which is stored in the database, regardless of containing duplicates or overlapping periods.
+
+    germany_and_uk = Country.where('identity = ? OR identity = ?','DEU','GBR')
+    germany_and_uk.effective_periods                    # ['to 1949-10-07',
+                                                        #  'to 2014-09-18',
+                                                        #  '1949-10-07 - 1990-10-03',
+                                                        #  'since 1990-10-03',
+                                                        #  'since 20140918']
+
+If you want a unique overview over all periods you have to use +combined_periods+ .
+
+    germany_and_uk.combined_periods                     # ['to 1949-10-07',
+                                                        #  '1949-10-07 - 1990-10-03',
+                                                        #  '1990-10-03 - 2014-09-18',
+                                                        #  'since 20140918']
+
+Like with +effective_periods+ we have all the possibilities to format the returned periods. The args method is available too.
+
+    germany_and_uk.combined_periods_formatted           # [{:start => '0000-01-01', :end => '1949-10-07', :reference => '1949-10-06'},
+                                                        #  {:start => '1949-10-07', :end => '1990-10-03', :reference => '1949-10-07'},
+                                                        #  {:start => '1990-10-03', :end => '2014-09-18', :reference => '1990-10-03'},
+                                                        #  {:start => '2014-09-18', :end => '9999-12-31', :reference => '2014-09-18'}]
+    Country.combined_periods_formatted('%Y-%m-%d','identity = ? OR identity = ?','DEU','GBR')
+
+    germany_and_uk.combined_periods_formatted           # [{:start => '01.01.0000', :end => '07.10.1949', :reference => '06.10.1949'},
+                                                        #  {:start => '07.10.1949', :end => '03.10.1990', :reference => '07.10.1949'},
+                                                        #  {:start => '03.10.1990', :end => '18.09.2014', :reference => '03.10.1990'},
+                                                        #  {:start => '18.09.2014', :end => '31.12.9999', :reference => '18.09.2014'}]
 
 ==== Class Methods
 

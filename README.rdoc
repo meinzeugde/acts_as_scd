@@ -195,10 +195,10 @@ Let's find out the reference dates for all periods in 2 different ways.
 When working with a client side framework, it's often adviced to have the periods formatted in a different way.
 First let's look at the iteration methods (the args method is shown too).
 
-    germany.effective_periods_formatted                     # [{:start => '0000-01-01', :end => '1949-10-07'},{:start => '1949-10-07', :end => '1990-10-03'},{:start => '1990-10-03', :end => '9999-12-31'}]
+    germany.effective_periods_formatted                     # [{:start => '0000-01-01', :end => '1949-10-07', :reference => '1949-10-06'},{:start => '1949-10-07', :end => '1990-10-03', :reference => '1949-10-07'},{:start => '1990-10-03', :end => '9999-12-31', :reference => '1990-10-03'}]
     Country.effective_periods_formatted('%Y-%m-%d',identity: 'DEU')
 
-    germany.effective_periods_formatted('%d.%m.%Y')         # [{:start => '01.01.0000', :end => '07.10.1949'},{:start => '07.10.1949', :end => '03.10.1990'},{:start => '03.10.1990', :end => '31.12.9999'}]
+    germany.effective_periods_formatted('%d.%m.%Y')         # [{:start => '01.01.0000', :end => '07.10.1949', :reference => '06.10.1949'},{:start => '07.10.1949', :end => '03.10.1990', :reference => '07.10.1949'},{:start => '03.10.1990', :end => '31.12.9999', :reference => '03.10.1990'}]
     Country.effective_periods_formatted('%d.%m.%Y',identity: 'DEU')
 
     germany.reference_dates_formatted                       # ['1949-10-06','1949-10-07','1990-10-03']
@@ -211,8 +211,8 @@ First let's look at the iteration methods (the args method is shown too).
 
 The iteration methods are also available to period instances.
 
-    periods[0].formatted                                # {:start => '0000-01-01', :end => '1949-10-07'}
-    periods[0].formatted('%d.%m.%Y')                    # {:start => '01.01.0000', :end => '07.10.1949'}
+    periods[0].formatted                                # {:start => '0000-01-01', :end => '1949-10-07', :reference=> '1949-10-06'}
+    periods[0].formatted('%d.%m.%Y')                    # {:start => '01.01.0000', :end => '07.10.1949', :reference=> '06.10.1949'}
 
     periods[0].reference_date_formatted                 # '1949-10-06'
     periods[0].reference_date_formatted('%d.%m.%Y')     # '06.10.1949'

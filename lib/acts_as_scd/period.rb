@@ -169,7 +169,8 @@ module ActsAsScd
     def formatted(strftime_format='%Y-%m-%d')
       {
           :start => DateValue[@start].to_date_formatted(strftime_format),
-          :end => DateValue[@end].to_date_formatted(strftime_format)
+          :end => DateValue[@end].to_date_formatted(strftime_format),
+          :reference => reference_date_formatted(strftime_format)
       }
     end
 

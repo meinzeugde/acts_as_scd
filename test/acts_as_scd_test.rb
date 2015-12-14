@@ -722,12 +722,12 @@ class ActsAsScdTest < ActiveSupport::TestCase
     germany = Country.where(identity: 'DEU')
     periods = germany.effective_periods
 
-    assert_equal [{:start => '0000-01-01', :end => '1949-10-07'},{:start => '1949-10-07', :end => '1990-10-03'},{:start => '1990-10-03', :end => '9999-12-31'}],
+    assert_equal [{:start => '0000-01-01', :end => '1949-10-07', :reference => '1949-10-06'},{:start => '1949-10-07', :end => '1990-10-03', :reference => '1949-10-07'},{:start => '1990-10-03', :end => '9999-12-31', :reference => '1990-10-03'}],
                  germany.effective_periods_formatted
     assert_equal germany.effective_periods_formatted,
                  Country.effective_periods_formatted('%Y-%m-%d',identity: 'DEU')
 
-    assert_equal [{:start => '01.01.0000', :end => '07.10.1949'},{:start => '07.10.1949', :end => '03.10.1990'},{:start => '03.10.1990', :end => '31.12.9999'}],
+    assert_equal [{:start => '01.01.0000', :end => '07.10.1949', :reference => '06.10.1949'},{:start => '07.10.1949', :end => '03.10.1990', :reference => '07.10.1949'},{:start => '03.10.1990', :end => '31.12.9999', :reference => '03.10.1990'}],
                  germany.effective_periods_formatted('%d.%m.%Y')
     assert_equal germany.effective_periods_formatted('%d.%m.%Y'),
                  Country.effective_periods_formatted('%d.%m.%Y',identity: 'DEU')
@@ -742,9 +742,9 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal germany.reference_dates_formatted('%d.%m.%Y'),
                  Country.reference_dates_formatted('%d.%m.%Y',identity: 'DEU')
 
-    assert_equal({:start => '0000-01-01', :end => '1949-10-07'},
+    assert_equal({:start => '0000-01-01', :end => '1949-10-07', :reference=> '1949-10-06'},
                  periods[0].formatted)
-    assert_equal({:start => '01.01.0000', :end => '07.10.1949'},
+    assert_equal({:start => '01.01.0000', :end => '07.10.1949', :reference=> '06.10.1949'},
                  periods[0].formatted('%d.%m.%Y'))
 
     assert_equal '1949-10-06',

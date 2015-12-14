@@ -95,8 +95,14 @@ module ActsAsScd
     # that is in general a bad idea, since it complicates obtaining
     # the first iteration
     def create_identity(attributes, start=nil)
-      start ||= START_OF_TIME
-      create(attributes.merge(START_COLUMN=>start || START_OF_TIME))
+      start = (start.nil?) ? START_OF_TIME : start.to_date.strftime("%Y%m%d")
+      create(attributes.merge(START_COLUMN=>start))
+    end
+
+    # returns an ActiveRecord Error if validation of model fails
+    def create_identity!(attributes, start=nil)
+      start = (start.nil?) ? START_OF_TIME : start.to_date.strftime("%Y%m%d")
+      create!(attributes.merge(START_COLUMN=>start))
     end
 
     # Create a new iteration
@@ -130,11 +136,11 @@ module ActsAsScd
     end
 
     def terminate_identity(identity, finish=Date.today)
-       finish = effective_date(finish)
-       transaction do
-         current_record = find_by_identity(identity)
-         current_record.update_attributes END_COLUMN=>finish
-       end
+      finish = effective_date(finish)
+      transaction do
+        current_record = find_by_identity(identity)
+        current_record.update_attributes END_COLUMN=>finish
+      end
     end
 
     # Association yo be used in a parent class which has identity and has children
@@ -157,9 +163,9 @@ module ActsAsScd
                  options.reverse_merge(foreign_key: fk, primary_key: pk)
       else
         has_many assoc, options.reverse_merge(
-                          foreign_key: fk, primary_key: pk,
-                          conditions: "#{other_model.effective_to_column_sql}=#{END_OF_TIME}"
-                        )
+            foreign_key: fk, primary_key: pk,
+            conditions: "#{other_model.effective_to_column_sql}=#{END_OF_TIME}"
+        )
       end
 
       # children at some date
@@ -271,11 +277,11 @@ module ActsAsScd
     # end
 
     def reference_dates(*args)
-      effective_periods(*args).map{|p| p.reference_date }
+      effective_periods(*args).map{|p| p.reference_date }.uniq
     end
 
     def reference_dates_formatted(strftime_format='%Y-%m-%d',*args)
-      effective_periods(*args).map{|p| p.reference_date_formatted(strftime_format) }
+      effective_periods(*args).map{|p| p.reference_date_formatted(strftime_format) }.uniq
     end
 
     # Most recent iteration (terminated or not)

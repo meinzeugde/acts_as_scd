@@ -56,6 +56,15 @@ module ActsAsScd
       end
     end
 
+    # returns an Exception (ActiveRecord::RecordNotFound) if no record is found
+    def at_present_or!(date=nil)
+      begin
+        result = at_present_or(date)
+        raise ActiveRecord::RecordNotFound if result.to_a.empty?
+        result
+      end
+    end
+
     def identity_column_sql(table_alias=nil)
       # %{#{ActiveRecord::Base.connection.quote_table_name(table_alias || table_name)}.#{ActiveRecord::Base.connection.quote_column_name(IDENTITY_COLUMN)}}
       %{#{connection.quote_table_name(table_alias || table_name)}.#{connection.quote_column_name(IDENTITY_COLUMN)}}
@@ -99,7 +108,7 @@ module ActsAsScd
       create(attributes.merge(START_COLUMN=>start))
     end
 
-    # returns an ActiveRecord Error if validation of model fails
+    # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
     def create_identity!(attributes, start=nil)
       start = (start.nil?) ? START_OF_TIME : start.to_date.strftime("%Y%m%d")
       create!(attributes.merge(START_COLUMN=>start))

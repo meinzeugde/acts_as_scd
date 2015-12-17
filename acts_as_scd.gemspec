@@ -1,4 +1,5 @@
 $:.push File.expand_path('../lib', __FILE__)
+$:.push File.expand_path('../config', __FILE__)
 
 require 'acts_as_scd/version'
 

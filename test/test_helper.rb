@@ -83,3 +83,17 @@ ActiveRecord::Schema.define do
   end
 
 end
+
+class ActiveSupport::TestCase
+  def assert_raises_with_message(exception, msg, &block)
+    block.call
+  rescue exception => e
+    assert_equal msg, e.message
+  end
+end
+
+class ActionController::TestCase
+  def json_response
+    ActiveSupport::JSON.decode @response.body
+  end
+end

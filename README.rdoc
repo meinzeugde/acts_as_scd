@@ -342,7 +342,15 @@ If you want to use the mysql2 adapter for your tests, type the following:
 
 === Testing
 
-Just run...
+All Tests
 
     rake test
+
+Model Tests
+
+    rake test:models
+
+Controller Tests
+
+    rake test:controllers
 

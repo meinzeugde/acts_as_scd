@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   # s.add_dependency "rails", "~> 3.2.13"
   s.add_dependency 'rails', '>= 3.2.13', '<= 4.1.4'
   s.add_dependency 'modalsupport', '~> 0.9.2'
+  s.add_dependency 'i18n'
 
   s.add_development_dependency 'json', '1.8.1'
   s.add_development_dependency 'sqlite3', '1.3.11'

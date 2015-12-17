@@ -107,7 +107,7 @@ module ActsAsScd
       )
     }
     model.before_validation :compute_identity
-    model.validates_uniqueness_of IDENTITY_COLUMN, :scope=>[START_COLUMN, END_COLUMN], :message=>"Invalid effective period"
+    model.validates_uniqueness_of IDENTITY_COLUMN, :scope=>[START_COLUMN, END_COLUMN], :message=> '[' + I18n.t('scd.errors.identity_in_use') + ']'
     model.before_destroy :remove_this_iteration
   end
 

@@ -1,0 +1,9 @@
+de:
+  scd:
+    period:
+      until: 'bis'
+      from:  'seit'
+      between: '-'
+      always: '-'
+    errors:
+      identity_in_use: '%{model}.%{attribute}: %{value} existiert bereits für den gewählten Zeitraum.'

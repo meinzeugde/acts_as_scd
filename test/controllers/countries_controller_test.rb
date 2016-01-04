@@ -69,4 +69,15 @@ class CountriesControllerTest < ActionController::TestCase
     assert_equal 'An entry for the identity CG already exists.', json_response['error']
   end
 
+  test "should get periods by identity" do
+    get :periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal '0000-01-01', json_response[0]['start']
+    assert_equal '1949-10-07', json_response[0]['end']
+    assert_equal '1949-10-07', json_response[1]['start']
+    assert_equal '1990-10-03', json_response[1]['end']
+    assert_equal '1990-10-03', json_response[2]['start']
+    assert_equal '9999-12-31', json_response[2]['end']
+  end
+
 end

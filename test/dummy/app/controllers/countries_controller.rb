@@ -25,6 +25,14 @@ class CountriesController < ApplicationController
     end
   end
 
+  def periods_by_identity
+    begin
+      render json: Country.combined_periods_formatted('%Y-%m-%d',{:identity=>params[:id]})
+    rescue Exception => e
+      render :json => {:error => e.message}, :status => :internal_server_error
+    end
+  end
+
   private
   ### private Methoden
   def map_countries_params

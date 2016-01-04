@@ -18,7 +18,7 @@ class CountriesController < ApplicationController
 
   def create
     begin
-      country = Country.create_identity!(map_countries_params,map_countries_effective_from)
+      country = Country.create_identity!(map_countries_params,map_countries_effective_from,map_countries_effective_to)
       render :json => country
     rescue Exception => e
       render :json => {:error => e.message}, :status => :internal_server_error
@@ -33,5 +33,9 @@ class CountriesController < ApplicationController
 
   def map_countries_effective_from
     params[:country][:effective_from]
+  end
+
+  def map_countries_effective_to
+    params[:country][:effective_to]
   end
 end

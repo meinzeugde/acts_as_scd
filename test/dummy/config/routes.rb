@@ -53,5 +53,7 @@ Rails.application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
-  resources :countries
+  resources :countries do
+    get 'periods_by_identity/:id', action: :periods_by_identity, on: :collection
+  end
 end

@@ -41,4 +41,32 @@ class CountriesControllerTest < ActionController::TestCase
     assert_equal 99999999, json_response['effective_to']
   end
 
+  test "should create a new country with start date" do
+    post :create, {country: {name: 'Country with Start Date', code: 'CWS', effective_from: '1949-01-01'}}
+    assert_response :success
+    assert_equal "CWS", json_response['identity']
+    assert_equal 19490101, json_response['effective_from']
+    assert_equal 99999999, json_response['effective_to']
+  end
+
+  test "should create a new country with start date and end date" do
+    post :create, {country: {name: 'Country with Start Date and End Date', code: 'CSE', effective_from: '1949-01-01', effective_to: '1990-10-03'}}
+    assert_response :success
+    assert_equal "CSE", json_response['identity']
+    assert_equal 19490101, json_response['effective_from']
+    assert_equal 19901003, json_response['effective_to']
+  end
+
+  test "should not create a static country which already exists as static country" do
+    post :create, {country: {name: 'Eternal Caledonia', code: 'CL'}}
+    assert_response :internal_server_error
+    assert_equal 'An entry for the identity CL already exists.', json_response['error']
+  end
+
+  test "should not create a static country which already exists as limited country" do
+    post :create, {country: {name: 'Volatile Changedonia', code: 'CG'}}
+    assert_response :internal_server_error
+    assert_equal 'An entry for the identity CG already exists.', json_response['error']
+  end
+
 end

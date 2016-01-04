@@ -107,7 +107,13 @@ module ActsAsScd
       )
     }
     model.before_validation :compute_identity
-    model.validates_uniqueness_of IDENTITY_COLUMN, :scope=>[START_COLUMN, END_COLUMN], :message=> '[' + I18n.t('scd.errors.identity_in_use') + ']'
+
+    # todo-matteo: needs to be refactored (check for overlapping ranges)
+    # model.validates_uniqueness_of IDENTITY_COLUMN, :scope=>[START_COLUMN, END_COLUMN], :message=> '[' + I18n.t('scd.errors.identity_in_use') + ']'
+
+    model.before_create ->{
+        raise I18n.t('scd.errors.identity_exists',{:identity=>self.identity}) if(self.unlimited? && model.identity_exists?(self.identity))
+    }
     model.before_destroy :remove_this_iteration
   end
 

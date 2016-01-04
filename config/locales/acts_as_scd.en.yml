@@ -6,4 +6,4 @@ en:
       between: '-'
       always: '-'
     errors:
-      identity_in_use: '%{model}.%{attribute}: %{value} already exists for the selected period.'
+      identity_exists: 'An entry for the identity %{identity} already exists.'

@@ -103,15 +103,17 @@ module ActsAsScd
     # The first iteration can be defined with a specific start date, but
     # that is in general a bad idea, since it complicates obtaining
     # the first iteration
-    def create_identity(attributes, start=nil)
-      start = (start.nil?) ? START_OF_TIME : start.to_date.strftime("%Y%m%d")
-      create(attributes.merge(START_COLUMN=>start))
+    def create_identity(attributes, start_date=nil, end_date=nil)
+      start_date = (start_date.nil?) ? START_OF_TIME : start_date.to_date.strftime("%Y%m%d")
+      end_date = (end_date.nil?) ? END_OF_TIME : end_date.to_date.strftime("%Y%m%d")
+      create(attributes.merge({START_COLUMN=>start_date,END_COLUMN=>end_date}))
     end
 
     # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
-    def create_identity!(attributes, start=nil)
-      start = (start.nil?) ? START_OF_TIME : start.to_date.strftime("%Y%m%d")
-      create!(attributes.merge(START_COLUMN=>start))
+    def create_identity!(attributes, start_date=nil, end_date=nil)
+      start_date = (start_date.nil?) ? START_OF_TIME : start_date.to_date.strftime("%Y%m%d")
+      end_date = (end_date.nil?) ? END_OF_TIME : end_date.to_date.strftime("%Y%m%d")
+      create!(attributes.merge({START_COLUMN=>start_date,END_COLUMN=>end_date}))
     end
 
     # Create a new iteration
@@ -323,6 +325,9 @@ module ActsAsScd
       where(identity:identity).reorder('effective_from asc')
     end
 
+    def has_unlimited?(identity)
+      !(where(identity:identity,effective_from:START_OF_TIME,effective_to:END_OF_TIME).first.nil?)
+    end
   end
 
 end

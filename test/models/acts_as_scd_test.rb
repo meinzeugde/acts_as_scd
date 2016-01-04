@@ -427,6 +427,9 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
     assert_equal [de1, de2, de3], Country.all_of('DEU')
 
+    assert_equal false, Country.has_unlimited?('DEU')
+    assert_equal true, Country.has_unlimited?('CL')
+
     # These generate queries that are valid for PostgreSQL but not for SQLite3
     #   (v1, v2) IN SELECT ...
     # assert_equal 1, Country.ended.latest.count

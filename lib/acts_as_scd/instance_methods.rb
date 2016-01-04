@@ -109,6 +109,10 @@ module ActsAsScd
     effective_period.limited?
   end
 
+  def unlimited?
+    effective_period.unlimited?
+  end
+
   def remove_this_iteration
     s = successor
     s.update_attributes effective_from: self.effective_from if s

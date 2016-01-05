@@ -104,7 +104,7 @@ module ActsAsScd
       date = Period.date(date)
       @start <= date && date < @end
     end
-    alias_method :at?, :includes?
+    alias_method :at_date?, :includes?
 
     def valid?
       @start < @end

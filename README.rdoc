@@ -83,7 +83,7 @@ at the current or any other date, the +at+ methods should be used.
 
 And also we can request the iteration that was active at some specific date:
 
-    Country.at(Date.new(1930,1,1)).where(identity: 'DEU').first
+    Country.at_date(Date.new(1930,1,1)).where(identity: 'DEU').first
 
 Now, imagine a war comes and goes and the country is split in two. The original country
 can be modified as:
@@ -177,7 +177,7 @@ Let's check if the selected period is active at the time beeing, which is '2015-
 
 Let's check if the selected period was active at the in '1949-10-07'.
 
-    periods[2].at? Date.new(1949,10,7)  # false
+    periods[2].at_date? Date.new(1949,10,7)  # false
 
 Let's find out the reference dates for all periods in 2 different ways.
 

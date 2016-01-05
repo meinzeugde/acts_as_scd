@@ -33,11 +33,11 @@ module ActsAsScd
     end
 
     def identities_at(date=nil)
-      at(date).identities
+      at_date(date).identities
     end
 
     def present_identities
-      at(Date.today).identities
+      at_date(Date.today).identities
     end
 
     def current_identities
@@ -45,7 +45,7 @@ module ActsAsScd
     end
 
     def at_present
-      at(Date.today)
+      at_date(Date.today)
     end
 
     def at_present!
@@ -58,9 +58,9 @@ module ActsAsScd
 
     def at_present_or(date=nil)
       if date.nil?
-        at(Date.today)
+        at_date(Date.today)
       else
-        at(date)
+        at_date(date)
       end
     end
 
@@ -94,25 +94,25 @@ module ActsAsScd
 
     # todo-matteo: deprecated (replace by find_by_identity_at, find_by_identity_at_present or find_by_identity_at_present_or)
     # Note that find_by_identity will return nil if there's not a current iteration of the identity
-    def find_by_identity(identity, at_date=nil)
+    def find_by_identity(identity, date=nil)
       # (at_date.nil? ? current : at(at_date)).where(IDENTITY_COLUMN=>identity).first
-      if at_date.nil?
+      if date.nil?
         q = current
       else
-        q = at(at_date)
+        q = at_date(date)
       end
       q = q.where(IDENTITY_COLUMN=>identity)
       q.first
     end
 
       # Note that find_by_identity will return nil if there's not a current iteration of the identity
-    def find_by_identity_at(identity, at_date)
-      at(at_date).where(IDENTITY_COLUMN=>identity).first
+    def find_by_identity_at(identity, date)
+      at_date(date).where(IDENTITY_COLUMN=>identity).first
     end
 
-    def find_by_identity_at!(identity, at_date)
+    def find_by_identity_at!(identity, date)
       begin
-        result = find_by_identity_at(identity, at_date)
+        result = find_by_identity_at(identity, date)
         raise ActiveRecord::RecordNotFound if result.nil?
         result
       end
@@ -120,7 +120,7 @@ module ActsAsScd
 
     # Note that find_by_identity will return nil if there's not a current iteration of the identity
     def find_by_identity_at_present(identity)
-      at(Date.today).where(IDENTITY_COLUMN=>identity).first
+      at_date(Date.today).where(IDENTITY_COLUMN=>identity).first
     end
 
     def find_by_identity_at_present!(identity)
@@ -132,17 +132,17 @@ module ActsAsScd
     end
 
     # Note that find_by_identity will return nil if there's not a current iteration of the identity
-    def find_by_identity_at_present_or(identity,at_date=nil)
-      if at_date.nil?
-        at(Date.today).where(IDENTITY_COLUMN=>identity).first
+    def find_by_identity_at_present_or(identity,date=nil)
+      if date.nil?
+        at_date(Date.today).where(IDENTITY_COLUMN=>identity).first
       else
-        at(at_date).where(IDENTITY_COLUMN=>identity).first
+        at_date(date).where(IDENTITY_COLUMN=>identity).first
       end
     end
 
-    def find_by_identity_at_present_or!(identity,at_date=nil)
+    def find_by_identity_at_present_or!(identity,date=nil)
       begin
-        result = find_by_identity_at_present_or(identity,at_date)
+        result = find_by_identity_at_present_or(identity,date)
         raise ActiveRecord::RecordNotFound if result.nil?
         result
       end
@@ -229,21 +229,20 @@ module ActsAsScd
 
       # children at some date
       define_method :"#{assoc}_at" do |date|
-        # other_model.unscoped.at(date).where(fk=>send(pk))
-        send(:"#{assoc_singular}_iterations").scoped.at(date)
+        send(:"#{assoc_singular}_iterations").at_date(date)
       end
 
       # children at today
       define_method :"#{assoc}_at_present" do
-        send(:"#{assoc_singular}_iterations").scoped.at(Date.today) # scoped necessary here to avoid delegation to Array
+        send(:"#{assoc_singular}_iterations").at_date(Date.today)
       end
 
       # children at today or some date
       define_method :"#{assoc}_at_present_or" do |date=nil|
         if date.nil?
-          send(:"#{assoc_singular}_iterations").scoped.at(Date.today) # scoped necessary here to avoid delegation to Array
+          send(:"#{assoc_singular}_iterations").at_date(Date.today)
         else
-          send(:"#{assoc_singular}_iterations").scoped.at(date) # scoped necessary here to avoid delegation to Array
+          send(:"#{assoc_singular}_iterations").at_date(date)
         end
       end
 
@@ -377,12 +376,12 @@ module ActsAsScd
       where(IDENTITY_COLUMN=>identity).exists?
     end
 
-    def has_identity_at?(identity, at_date)
-      at(at_date).where(IDENTITY_COLUMN=>identity).exists?
+    def has_identity_at?(identity, date)
+      at_date(date).where(IDENTITY_COLUMN=>identity).exists?
     end
 
     def has_identity_at_present?(identity)
-      at(Date.today).where(IDENTITY_COLUMN=>identity).exists?
+      at_date(Date.today).where(IDENTITY_COLUMN=>identity).exists?
     end
 
     def has_unlimited_identity?(identity)

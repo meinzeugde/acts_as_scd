@@ -10,12 +10,8 @@ module ActsAsScd
     self.class.initial.where(IDENTITY_COLUMN=>identity).first
   end
 
-  def at(date=nil)
-    if date.present?
-      self.class.find_by_identity(identity, date)
-    else
-      current
-    end
+  def at_date(date)
+    self.class.find_by_identity(identity, date)
   end
 
   def at_present

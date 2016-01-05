@@ -21,17 +21,8 @@ module ActsAsScd
     model.scope :current, ->{model.where("#{model.effective_to_column_sql} = :date", :date=>END_OF_TIME)}
     model.scope :initial, ->{model.where("#{model.effective_from_column_sql} = :date", :date=>START_OF_TIME)}
     # Iterations effective at given date
-    # Note that since Array has an 'at' method, this cannot be applied directly to
-    # associations (the Array method would be used after generating an Array from the query).
-    # It is necessary to use .scoped.at(...) for associations.
-    model.scope :at, ->(date=nil){
-      # TODO: consider renaming this to current_at or active_at to avoid having to use
-      # scoped with associations
-      if date.present?
+    model.scope :at_date, ->(date){
         model.where(%{#{model.effective_from_column_sql}<=:date AND #{model.effective_to_column_sql}>:date}, :date=>model.effective_date(date))
-      else
-        model.current
-      end
     }
     # Iterations superseded/terminated
     model.scope :ended, ->{model.where("#{model.effective_to_column_sql} < :date", :date=>END_OF_TIME)}

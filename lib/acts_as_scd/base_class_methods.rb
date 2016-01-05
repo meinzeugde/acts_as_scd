@@ -42,7 +42,7 @@ module ActsAsScd
                           )
       end
       define_method :"#{assoc}_at" do |date=nil|
-        other_model.at(date).where(IDENTITY_COLUMN=>send(fk)).first
+        other_model.at_date(date).where(IDENTITY_COLUMN=>send(fk)).first
       end
     end
 
@@ -66,20 +66,20 @@ module ActsAsScd
       # children at some date
       define_method :"#{assoc}_at" do |date=nil|
         # has_many assoc, options.merge(conditions: [%{#{model.effective_from_column_sql}<=:date AND #{model.effective_to_column_sql}>:date}, :date=>model.effective_date(date)]
-        send(:"#{assoc}_iterations").scoped.at(date) # scoped necessary here to avoid delegation to Array
+        send(:"#{assoc}_iterations").at_date(date)
       end
 
       # children at today
       define_method :"#{assoc}_at_present" do
-        send(:"#{assoc}_iterations").scoped.at(Date.today) # scoped necessary here to avoid delegation to Array
+        send(:"#{assoc}_iterations").at_date(Date.today)
       end
 
       # children at today or some date
       define_method :"#{assoc}_at_present_or" do |date=nil|
         if date.nil?
-          send(:"#{assoc}_iterations").scoped.at(Date.today) # scoped necessary here to avoid delegation to Array
+          send(:"#{assoc}_iterations").at_date(Date.today)
         else
-          send(:"#{assoc}_iterations").scoped.at(date) # scoped necessary here to avoid delegation to Array
+          send(:"#{assoc}_iterations").at_date(date)
         end
       end
 

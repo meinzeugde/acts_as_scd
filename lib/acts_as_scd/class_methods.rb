@@ -37,7 +37,7 @@ module ActsAsScd
     end
 
     def present_identities
-      at_date(Date.today).identities
+      at_present.identities
     end
 
     def current_identities
@@ -58,13 +58,13 @@ module ActsAsScd
 
     def at_present_or(date=nil)
       if date.nil?
-        at_date(Date.today)
+        at_present
       else
         at_date(date)
       end
     end
 
-    # returns an Exception (ActiveRecord::RecordNotFound) if no record is found
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
     def at_present_or!(date=nil)
       begin
         result = at_present_or(date)
@@ -92,24 +92,12 @@ module ActsAsScd
       Period.date(d)
     end
 
-    # todo-matteo: deprecated (replace by find_by_identity_at, find_by_identity_at_present or find_by_identity_at_present_or)
-    # Note that find_by_identity will return nil if there's not a current iteration of the identity
-    def find_by_identity(identity, date=nil)
-      # (at_date.nil? ? current : at(at_date)).where(IDENTITY_COLUMN=>identity).first
-      if date.nil?
-        q = current
-      else
-        q = at_date(date)
-      end
-      q = q.where(IDENTITY_COLUMN=>identity)
-      q.first
-    end
-
-      # Note that find_by_identity will return nil if there's not a current iteration of the identity
+    #returns nil if nothing is found
     def find_by_identity_at(identity, date)
       at_date(date).where(IDENTITY_COLUMN=>identity).first
     end
 
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
     def find_by_identity_at!(identity, date)
       begin
         result = find_by_identity_at(identity, date)
@@ -118,11 +106,12 @@ module ActsAsScd
       end
     end
 
-    # Note that find_by_identity will return nil if there's not a current iteration of the identity
+    #returns nil if nothing is found
     def find_by_identity_at_present(identity)
       at_date(Date.today).where(IDENTITY_COLUMN=>identity).first
     end
 
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
     def find_by_identity_at_present!(identity)
       begin
         result = find_by_identity_at_present(identity)
@@ -131,7 +120,7 @@ module ActsAsScd
       end
     end
 
-    # Note that find_by_identity will return nil if there's not a current iteration of the identity
+    #returns nil if nothing is found
     def find_by_identity_at_present_or(identity,date=nil)
       if date.nil?
         at_date(Date.today).where(IDENTITY_COLUMN=>identity).first
@@ -140,6 +129,7 @@ module ActsAsScd
       end
     end
 
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
     def find_by_identity_at_present_or!(identity,date=nil)
       begin
         result = find_by_identity_at_present_or(identity,date)
@@ -169,10 +159,10 @@ module ActsAsScd
     # :unterminate - if the identity exists and is terminated, unterminate it (extending the last iteration to the new date)
     # :extend_from - if no prior iteration exists, extend effective_from to the start-of-time
     # (TODO: consider making :extend_from the default, adding an option for the opposite...)
-    def create_iteration(identity, attribute_changes, start=nil, options={})
-      start = effective_date(start || Date.today)
+    def create_iteration(identity, attribute_changes, start=Date.today, options={})
+      start = effective_date(start)
       transaction do
-        current_record = find_by_identity(identity)
+        current_record = find_by_identity_at(identity,start)
         if !current_record && options[:unterminate]
           current_record = latest_of(identity) # terminated.where(IDENTITY_COLUMN=>identity).first
           #   where(IDENTITY_COLUMN=>identity).where("#{effective_to_column_sql} < #{END_OF_TIME}").reorder("#{effective_to_column_sql} desc").limit(1).first
@@ -194,11 +184,11 @@ module ActsAsScd
       end
     end
 
-    def terminate_identity(identity, finish=Date.today)
-      finish = effective_date(finish)
+    def terminate_identity(identity, date=Date.today)
+      date = effective_date(date)
       transaction do
-        current_record = find_by_identity(identity)
-        current_record.update_attributes END_COLUMN=>finish
+        current_record = find_by_identity_at(identity,date)
+        current_record.update_attributes END_COLUMN=>date
       end
     end
 

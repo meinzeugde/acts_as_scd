@@ -3,7 +3,7 @@ module ActsAsScd
   # TODO: replace identity by send(IDENTITY_COLUMN)...
 
   def current
-    self.class.find_by_identity(identity)
+    self.class.current.where(IDENTITY_COLUMN=>identity).first
   end
 
   def initial
@@ -11,11 +11,11 @@ module ActsAsScd
   end
 
   def at_date(date)
-    self.class.find_by_identity(identity, date)
+    self.class.find_by_identity_at(identity, date)
   end
 
   def at_present
-    self.class.find_by_identity(identity, Date.today)
+    self.class.find_by_identity_at_present
   end
 
   def successor
@@ -50,9 +50,9 @@ module ActsAsScd
     self.class.where(identity:identity).reorder('effective_from asc').limit(1).first
   end
 
-  def terminate_identity(finish=Date.today)
-     finish = self.class.effective_date(finish)
-     update_attributes END_COLUMN=>finish
+  def terminate_identity(date=Date.today)
+     date = self.class.effective_date(date)
+     update_attributes END_COLUMN=>date
   end
 
   def ended?

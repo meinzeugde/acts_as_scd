@@ -5,7 +5,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
   fixtures :all
 
   test "Models can act as SCD" do
-    assert_equal countries(:caledonia), Country.find_by_identity('CL', Date.today)
+    assert_equal countries(:caledonia), Country.find_by_identity_at_present('CL')
     assert_equal countries(:caledonia), Country.at_present.where(:identity => 'CL').first
     assert_equal countries(:caledonia), Country.where(:identity => 'CL').at_present.first
     assert_equal Date.new(2014,3,2), countries(:changedonia_first).effective_to_date
@@ -85,7 +85,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal date2, t3_3.effective_from_date
     assert_equal ActsAsScd::END_OF_TIME, t3_3.effective_to
 
-    assert_equal t3_3, Country.find_by_identity('T3')
+    assert_equal t3_3, Country.current.where(:identity=>'T3').first
 
     assert_equal t3_3, t3.current
     assert_equal t3_3, t3.at_date(date2)
@@ -177,7 +177,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_nil t3.current
     assert_nil t3_2.current
     assert_nil t3_3.current
-    assert_nil Country.find_by_identity('T3')
+    assert_nil Country.current.where(:identity=>'T3').first
 
     assert_nil         t3.at_date(date3+1)
     assert_nil         t3.at_date(date3)

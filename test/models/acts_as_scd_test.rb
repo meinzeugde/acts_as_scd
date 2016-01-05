@@ -292,14 +292,6 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal de1, Country.find_by_identity('DEU', Date.new(1940,1,1))
     assert_equal de1, Country.find_by_identity('DEU', Date.new(1000,1,1))
     assert_equal cal, Country.find_by_identity('CL',  Date.new(3000,1,1))
-    assert_equal de3, Country.find_by_identity('DEU', Date.new(2000,1,1))
-    assert_equal de3, Country.find_by_identity('DEU', Date.new(1990,10,3))
-    assert_equal de2, Country.find_by_identity('DEU', Date.new(1990,10,2))
-    assert_equal de2, Country.find_by_identity('DEU', Date.new(1970,1,1))
-    assert_equal de2, Country.find_by_identity('DEU', Date.new(1949,10,7))
-    assert_equal de1, Country.find_by_identity('DEU', Date.new(1949,10,6))
-    assert_equal de1, Country.find_by_identity('DEU', Date.new(1940,1,1))
-    assert_equal de1, Country.find_by_identity('DEU', Date.new(1000,1,1))
     assert_nil        Country.find_by_identity('DDR', Date.new(1940,1,1))
     assert_nil        Country.find_by_identity('DDR', Date.new(1949,10,6))
     assert_equal ddr, Country.find_by_identity('DDR', Date.new(1949,10,7))
@@ -383,14 +375,6 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal de1, Country.at(Date.new(1940,1,1)).where(identity: 'DEU').first
     assert_equal de1, Country.at(Date.new(1000,1,1)).where(identity: 'DEU').first
     assert_equal cal, Country.at(Date.new(3000,1,1)).where(identity: 'CL').first
-    assert_equal de3, Country.at(Date.new(2000,1,1)).where(identity: 'DEU').first
-    assert_equal de3, Country.at(Date.new(1990,10,3)).where(identity: 'DEU').first
-    assert_equal de2, Country.at(Date.new(1990,10,2)).where(identity: 'DEU').first
-    assert_equal de2, Country.at(Date.new(1970,1,1)).where(identity: 'DEU').first
-    assert_equal de2, Country.at(Date.new(1949,10,7)).where(identity: 'DEU').first
-    assert_equal de1, Country.at(Date.new(1949,10,6)).where(identity: 'DEU').first
-    assert_equal de1, Country.at(Date.new(1940,1,1)).where(identity: 'DEU').first
-    assert_equal de1, Country.at(Date.new(1000,1,1)).where(identity: 'DEU').first
     assert_nil Country.at(Date.new(1940,1,1)).where(identity: 'DDR').first
     assert_nil Country.at(Date.new(1949,10,6)).where(identity: 'DDR').first
     assert_equal ddr, Country.at(Date.new(1949,10,7)).where(identity: 'DDR').first
@@ -404,7 +388,6 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal 5, Country.at(Date.new(1970,1,1)).count
     assert_equal 5, Country.at(Date.new(1990,10,2)).count
     assert_equal 4, Country.at(Date.new(1990,10,3)).count
-    assert_equal 4, Country.at(Date.new(2000,1,1)).count
     assert_equal 4, Country.at(Date.new(2000,1,1)).count
     assert_equal 4, Country.at(Date.new(2014,3,1)).count
     assert_equal 4, Country.at(Date.new(2014,3,2)).count
@@ -461,8 +444,6 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal %w(CG CL DEU GBR), Country.at(Date.new(1949,10,6)).ordered_identities
     assert_equal %w(CG CL DEU GBR), Country.at(Date.new(1940,1,1)).ordered_identities
 
-    assert_equal %w(CG CL CTA DDR DEU GBR SCO), Country.ordered_identities
-    assert_equal %w(CG CL DEU GBR SCO), Country.current.ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.identities_at(Date.new(2015,1,1)).sort
     assert_equal %w(CG CL DEU GBR SCO), Country.identities_at(Date.new(2014,9,18)).sort
     assert_equal %w(CG CL DEU GBR), Country.identities_at(Date.new(2014,9,17)).sort

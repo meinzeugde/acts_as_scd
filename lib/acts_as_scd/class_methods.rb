@@ -48,6 +48,14 @@ module ActsAsScd
       at(Date.today)
     end
 
+    def at_present!
+      begin
+        result = at_present
+        raise ActiveRecord::RecordNotFound if result.to_a.empty?
+        result
+      end
+    end
+
     def at_present_or(date=nil)
       if date.nil?
         at(Date.today)
@@ -84,6 +92,7 @@ module ActsAsScd
       Period.date(d)
     end
 
+    # todo-matteo: deprecated (replace by find_by_identity_at, find_by_identity_at_present or find_by_identity_at_present_or)
     # Note that find_by_identity will return nil if there's not a current iteration of the identity
     def find_by_identity(identity, at_date=nil)
       # (at_date.nil? ? current : at(at_date)).where(IDENTITY_COLUMN=>identity).first
@@ -94,6 +103,49 @@ module ActsAsScd
       end
       q = q.where(IDENTITY_COLUMN=>identity)
       q.first
+    end
+
+      # Note that find_by_identity will return nil if there's not a current iteration of the identity
+    def find_by_identity_at(identity, at_date)
+      at(at_date).where(IDENTITY_COLUMN=>identity).first
+    end
+
+    def find_by_identity_at!(identity, at_date)
+      begin
+        result = find_by_identity_at(identity, at_date)
+        raise ActiveRecord::RecordNotFound if result.nil?
+        result
+      end
+    end
+
+    # Note that find_by_identity will return nil if there's not a current iteration of the identity
+    def find_by_identity_at_present(identity)
+      at(Date.today).where(IDENTITY_COLUMN=>identity).first
+    end
+
+    def find_by_identity_at_present!(identity)
+      begin
+        result = find_by_identity_at_present(identity)
+        raise ActiveRecord::RecordNotFound if result.nil?
+        result
+      end
+    end
+
+    # Note that find_by_identity will return nil if there's not a current iteration of the identity
+    def find_by_identity_at_present_or(identity,at_date=nil)
+      if at_date.nil?
+        at(Date.today).where(IDENTITY_COLUMN=>identity).first
+      else
+        at(at_date).where(IDENTITY_COLUMN=>identity).first
+      end
+    end
+
+    def find_by_identity_at_present_or!(identity,at_date=nil)
+      begin
+        result = find_by_identity_at_present_or(identity,at_date)
+        raise ActiveRecord::RecordNotFound if result.nil?
+        result
+      end
     end
 
     # The first iteration can be defined with a specific start date, but

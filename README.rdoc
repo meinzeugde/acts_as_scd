@@ -260,10 +260,10 @@ Like with +effective_periods+ we have all the possibilities to format the return
 
 The following class methods return a Boolean value:
 
-    has_identity?(identity)
-    has_identity_at?(identity,date)
-    has_identity_at_present?(identity)
-    has_unlimited_identity?(identity)
+    model.has_identity?(identity)
+    model.has_identity_at?(identity,date)
+    model.has_identity_at_present?(identity)
+    model.has_unlimited_identity?(identity)
 
 Let's presume there are only three identities (respectively countries): "DEU", "DDR" and "CL.
 "CL" is a static (or unlimited) identity with start date 0000-01-01 and end date 9999-12-31.
@@ -292,15 +292,55 @@ Let's presume there are only three identities (respectively countries): "DEU", "
     Country.has_unlimited_identity?('DDR')                  # false
     Country.has_unlimited_identity?('CL')                   # true
 
-===== B. Query methods returning (further-refinable) queries
+When working with a client side framework, normally the suitable date parameter is a string.
+Therefore it is adviced to use the following string format: YYYY-MM-DD.
+
+    Country.has_identity_at?('DEU', '1949-10-06')    # true
+    Country.has_identity_at?('DDR', '1990-10-03')    # false
+
+===== B. Query Methods to find specific identities
+
+The following class methods return an instance (or nil if nothing was found):
+
+    model.find_by_identity_at(identity,date)
+    model.find_by_identity_at_present(identity)
+    model.find_by_identity_at_present_or(identity[,date])
+
+Let's presume there are only three identities (respectively countries): "DEU", "DDR" and "CL.
+"CL" is a static (or unlimited) identity with start date 0000-01-01 and end date 9999-12-31.
+"DEU" has 3 periods, it was changed in 1949-10-07 and 1990-10-03.
+"DDR" is a limited identity with start date 1949-10-07 and end date 1990-10-03.
+
+    Country.find_by_identity_at('DEU', Date.new(1949,10,6))  # <Country> Germany {0000-01-01 to 1949-10-07}
+    Country.find_by_identity_at_present('DEU')               # <Country> Germany {1990-10-03 to 9999-12-31}
+
+    Country.find_by_identity_at('DDR', Date.new(1949,10,6))  # nil
+    Country.find_by_identity_at('DDR', Date.new(1970,01,01)) # <Country> East Germany {1949-10-07 to 1990-10-03}
+    Country.find_by_identity_at_present('DDR')               # nil
+
+    Country.find_by_identity_at('CL', Date.new(1949,10,6))   # <Country> Eternal Caledonia {0000-01-01 to 9999-12-31}
+    Country.find_by_identity_at_present('CL')                # <Country> Eternal Caledonia {0000-01-01 to 9999-12-31}
+
+The method +find_by_identity_at_present_or+ is a mixup of the 2 previous methods and should preferably be used in controllers.
+The big advantage is, that you do not necessarily need to hand over the +date+ parameter.
+
+    Country.find_by_identity_at_present_or('DEU')                       # <Country> Germany {1990-10-03 to 9999-12-31}
+    Country.find_by_identity_at_present_or('DEU', Date.new(1949,10,6))  # <Country> Germany {0000-01-01 to 1949-10-07}
+
+When working with a client side framework, normally the suitable date parameter is a string.
+Therefore it is adviced to use the following string format: YYYY-MM-DD.
+
+    Country.find_by_identity_at_present_or('DEU', "1949-10-06")  # <Country> Germany {0000-01-01 to 1949-10-07}
+
+===== C. Query methods returning (further-refinable) queries
 
 ...
 
-===== C. Query methods that return objects
+===== D. Query methods that return objects
 
 ...
 
-===== D. Methods with limitations
+===== E. Methods with limitations
 
 ...
 

@@ -266,7 +266,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
   end
 
-  test "find_by_identity" do
+  test "Model query methods that find identities" do
 
     de1 = countries(:de1)
     de2 = countries(:de2)
@@ -277,29 +277,41 @@ class ActsAsScdTest < ActiveSupport::TestCase
     sco = countries(:scotland)
     cal = countries(:caledonia)
 
-    assert_equal de3, Country.find_by_identity('DEU')
-    assert_nil Country.find_by_identity('DDR')
-    assert_equal uk2, Country.find_by_identity('GBR')
-    assert_equal sco, Country.find_by_identity('SCO')
+    # find present countries
+    assert_equal de3, Country.find_by_identity_at_present('DEU')
+    assert_nil Country.find_by_identity_at_present('DDR')
+    assert_equal uk2, Country.find_by_identity_at_present('GBR')
+    assert_equal sco, Country.find_by_identity_at_present('SCO')
 
-    assert_equal de3, Country.find_by_identity('DEU', Date.new(3000,1,1))
-    assert_equal de3, Country.find_by_identity('DEU', Date.new(2000,1,1))
-    assert_equal de3, Country.find_by_identity('DEU', Date.new(1990,10,3))
-    assert_equal de2, Country.find_by_identity('DEU', Date.new(1990,10,2))
-    assert_equal de2, Country.find_by_identity('DEU', Date.new(1970,1,1))
-    assert_equal de2, Country.find_by_identity('DEU', Date.new(1949,10,7))
-    assert_equal de1, Country.find_by_identity('DEU', Date.new(1949,10,6))
-    assert_equal de1, Country.find_by_identity('DEU', Date.new(1940,1,1))
-    assert_equal de1, Country.find_by_identity('DEU', Date.new(1000,1,1))
-    assert_equal cal, Country.find_by_identity('CL',  Date.new(3000,1,1))
-    assert_nil        Country.find_by_identity('DDR', Date.new(1940,1,1))
-    assert_nil        Country.find_by_identity('DDR', Date.new(1949,10,6))
-    assert_equal ddr, Country.find_by_identity('DDR', Date.new(1949,10,7))
-    assert_equal ddr, Country.find_by_identity('DDR', Date.new(1970,1,1))
-    assert_equal ddr, Country.find_by_identity('DDR', Date.new(1990,10,2))
-    assert_nil        Country.find_by_identity('DDR', Date.new(1990,10,3))
-    assert_nil        Country.find_by_identity('DDR', Date.new(2015,1,1))
+    # find countries at specific date
+    assert_equal de3, Country.find_by_identity_at('DEU', Date.new(3000,1,1))
+    assert_equal de3, Country.find_by_identity_at('DEU', "3000-01-01") # optional date syntax
+    assert_equal de3, Country.find_by_identity_at('DEU', Date.new(2000,1,1))
+    assert_equal de3, Country.find_by_identity_at('DEU', "2000-01-01")
+    assert_equal de3, Country.find_by_identity_at('DEU', Date.new(1990,10,3))
+    assert_equal de3, Country.find_by_identity_at('DEU', "1990-10-03")
+    assert_equal de2, Country.find_by_identity_at('DEU', Date.new(1990,10,2))
+    assert_equal de2, Country.find_by_identity_at('DEU', "1990-10-02")
+    assert_equal de2, Country.find_by_identity_at('DEU', Date.new(1970,1,1))
+    assert_equal de2, Country.find_by_identity_at('DEU', "1970-01-01")
+    assert_equal de2, Country.find_by_identity_at('DEU', Date.new(1949,10,7))
+    assert_equal de1, Country.find_by_identity_at('DEU', Date.new(1949,10,6))
+    assert_equal de1, Country.find_by_identity_at('DEU', Date.new(1940,1,1))
+    assert_equal de1, Country.find_by_identity_at('DEU', Date.new(1000,1,1))
+    assert_equal cal, Country.find_by_identity_at('CL',  Date.new(3000,1,1))
+    assert_nil        Country.find_by_identity_at('DDR', Date.new(1940,1,1))
+    assert_nil        Country.find_by_identity_at('DDR', Date.new(1949,10,6))
+    assert_equal ddr, Country.find_by_identity_at('DDR', Date.new(1949,10,7))
+    assert_equal ddr, Country.find_by_identity_at('DDR', Date.new(1970,1,1))
+    assert_equal ddr, Country.find_by_identity_at('DDR', Date.new(1990,10,2))
+    assert_nil        Country.find_by_identity_at('DDR', Date.new(1990,10,3))
+    assert_nil        Country.find_by_identity_at('DDR', Date.new(2015,1,1))
 
+    # the *present_or method takes an optional date parameter combining the functionality of *at and *present
+    assert_equal Country.find_by_identity_at_present('DEU'),
+                 Country.find_by_identity_at_present_or('DEU')
+    assert_equal Country.find_by_identity_at_present('DEU'),
+                 Country.find_by_identity_at_present_or('DEU',Date.today)
   end
 
   test "Model query methods that perform simple checks" do
@@ -309,10 +321,15 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert  Country.has_identity?('CL')
 
     assert  Country.has_identity_at?('DEU', Date.new(3000,1,1))
+    assert  Country.has_identity_at?('DEU',"3000-01-01") # optional date syntax
     assert  Country.has_identity_at?('DEU', Date.new(1990,10,3))
+    assert  Country.has_identity_at?('DEU', "1990-10-03")
     assert  Country.has_identity_at?('DEU', Date.new(1970,1,1))
+    assert  Country.has_identity_at?('DEU', "1970-01-01")
     assert  Country.has_identity_at?('DEU', Date.new(1949,10,7))
+    assert  Country.has_identity_at?('DEU', "1949-10-07")
     assert  Country.has_identity_at?('DEU', Date.new(1949,10,6))
+    assert  Country.has_identity_at?('DEU', "1949-10-06")
     assert  Country.has_identity_at?('DEU', Date.new(1940,1,1))
     assert  Country.has_identity_at?('DEU', Date.new(1000,1,1))
     assert !Country.has_identity_at?('DDR', Date.new(3000,1,1))

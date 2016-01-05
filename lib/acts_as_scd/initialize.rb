@@ -112,7 +112,7 @@ module ActsAsScd
     # model.validates_uniqueness_of IDENTITY_COLUMN, :scope=>[START_COLUMN, END_COLUMN], :message=> '[' + I18n.t('scd.errors.identity_in_use') + ']'
 
     model.before_create ->{
-        raise I18n.t('scd.errors.identity_exists',{:identity=>self.identity}) if(self.unlimited? && model.identity_exists?(self.identity))
+        raise I18n.t('scd.errors.identity_exists',{:identity=>self.identity}) if(self.unlimited? && model.has_identity?(self.identity))
     }
     model.before_destroy :remove_this_iteration
   end

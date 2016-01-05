@@ -310,47 +310,37 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
   end
 
-  test "identity_exists?" do
+  test "Model query methods that perform simple checks" do
 
-    de1 = countries(:de1)
-    de2 = countries(:de2)
-    de3 = countries(:de3)
-    ddr = countries(:ddr)
-    uk1 = countries(:uk1)
-    uk2 = countries(:uk2)
-    sco = countries(:scotland)
-    cal = countries(:caledonia)
+    assert  Country.has_identity?('DEU')
+    assert  Country.has_identity?('DDR')
+    assert  Country.has_identity?('CL')
 
-    assert  Country.identity_exists?('DEU')
-    assert  Country.identity_exists?('DDR')
-    assert  Country.identity_exists?('GBR')
-    assert  Country.identity_exists?('SCO')
+    assert  Country.has_identity_at?('DEU', Date.new(3000,1,1))
+    assert  Country.has_identity_at?('DEU', Date.new(1990,10,3))
+    assert  Country.has_identity_at?('DEU', Date.new(1970,1,1))
+    assert  Country.has_identity_at?('DEU', Date.new(1949,10,7))
+    assert  Country.has_identity_at?('DEU', Date.new(1949,10,6))
+    assert  Country.has_identity_at?('DEU', Date.new(1940,1,1))
+    assert  Country.has_identity_at?('DEU', Date.new(1000,1,1))
+    assert !Country.has_identity_at?('DDR', Date.new(3000,1,1))
+    assert !Country.has_identity_at?('DDR', Date.new(1990,10,3))
+    assert  Country.has_identity_at?('DDR', Date.new(1990,10,2))
+    assert  Country.has_identity_at?('DDR', Date.new(1970,1,1))
+    assert  Country.has_identity_at?('DDR', Date.new(1949,10,7))
+    assert !Country.has_identity_at?('DDR', Date.new(1949,10,6))
+    assert !Country.has_identity_at?('DDR', Date.new(1000,1,1))
+    assert  Country.has_identity_at?('CL',  Date.new(3000,1,1))
+    assert  Country.has_identity_at?('CL',  Date.new(2000,1,1))
+    assert  Country.has_identity_at?('CL',  Date.new(1000,1,1))
 
-    assert  Country.identity_exists?('DEU', Date.new(3000,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(2000,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(1990,10,3))
-    assert  Country.identity_exists?('DEU', Date.new(1990,10,2))
-    assert  Country.identity_exists?('DEU', Date.new(1970,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(1949,10,7))
-    assert  Country.identity_exists?('DEU', Date.new(1949,10,6))
-    assert  Country.identity_exists?('DEU', Date.new(1940,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(1000,1,1))
-    assert  Country.identity_exists?('CL',  Date.new(3000,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(2000,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(1990,10,3))
-    assert  Country.identity_exists?('DEU', Date.new(1990,10,2))
-    assert  Country.identity_exists?('DEU', Date.new(1970,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(1949,10,7))
-    assert  Country.identity_exists?('DEU', Date.new(1949,10,6))
-    assert  Country.identity_exists?('DEU', Date.new(1940,1,1))
-    assert  Country.identity_exists?('DEU', Date.new(1000,1,1))
-    assert !Country.identity_exists?('DDR', Date.new(1940,1,1))
-    assert !Country.identity_exists?('DDR', Date.new(1949,10,6))
-    assert  Country.identity_exists?('DDR', Date.new(1949,10,7))
-    assert  Country.identity_exists?('DDR', Date.new(1970,1,1))
-    assert  Country.identity_exists?('DDR', Date.new(1990,10,2))
-    assert !Country.identity_exists?('DDR', Date.new(1990,10,3))
-    assert !Country.identity_exists?('DDR', Date.new(2015,1,1))
+    assert  Country.has_identity_at_present?('DEU')
+    assert !Country.has_identity_at_present?('DDR')
+    assert  Country.has_identity_at_present?('CL')
+
+    assert !Country.has_unlimited_identity?('DEU')
+    assert !Country.has_unlimited_identity?('DDR')
+    assert  Country.has_unlimited_identity?('CL')
 
   end
 
@@ -426,9 +416,6 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal ddr, Country.ended.where(identity: 'DDR').first
 
     assert_equal [de1, de2, de3], Country.all_of('DEU')
-
-    assert_equal false, Country.has_unlimited?('DEU')
-    assert_equal true, Country.has_unlimited?('CL')
 
     # These generate queries that are valid for PostgreSQL but not for SQLite3
     #   (v1, v2) IN SELECT ...

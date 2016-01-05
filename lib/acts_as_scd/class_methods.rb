@@ -96,10 +96,6 @@ module ActsAsScd
       q.first
     end
 
-    def identity_exists?(identity, at_date=nil)
-      (at_date.nil? ? self : at(at_date)).where(IDENTITY_COLUMN=>identity).exists?
-    end
-
     # The first iteration can be defined with a specific start date, but
     # that is in general a bad idea, since it complicates obtaining
     # the first iteration
@@ -314,19 +310,31 @@ module ActsAsScd
 
     # Most recent iteration (terminated or not)
     def latest_of(identity)
-      where(identity:identity).reorder('effective_to desc').limit(1).first
+      where(IDENTITY_COLUMN=>identity).reorder('effective_to desc').limit(1).first
     end
 
     def earliest_of(identity)
-      where(identity:identity).reorder('effective_to asc').limit(1).first
+      where(IDENTITY_COLUMN=>identity).reorder('effective_to asc').limit(1).first
     end
 
     def all_of(identity)
-      where(identity:identity).reorder('effective_from asc')
+      where(IDENTITY_COLUMN=>identity).reorder('effective_from asc')
     end
 
-    def has_unlimited?(identity)
-      !(where(identity:identity,effective_from:START_OF_TIME,effective_to:END_OF_TIME).first.nil?)
+    def has_identity?(identity)
+      where(IDENTITY_COLUMN=>identity).exists?
+    end
+
+    def has_identity_at?(identity, at_date)
+      at(at_date).where(IDENTITY_COLUMN=>identity).exists?
+    end
+
+    def has_identity_at_present?(identity)
+      at(Date.today).where(IDENTITY_COLUMN=>identity).exists?
+    end
+
+    def has_unlimited_identity?(identity)
+      where(IDENTITY_COLUMN=>identity,START_COLUMN=>START_OF_TIME,END_COLUMN=>END_OF_TIME).exists?
     end
   end
 

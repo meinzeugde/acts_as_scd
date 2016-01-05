@@ -256,9 +256,53 @@ Like with +effective_periods+ we have all the possibilities to format the return
 
 ==== Class Methods
 
-* Query methods returning (further-refinable) queries
-* Query methods that return objects
-* Methods with limitations
+===== A. Query Methods to perform checks on identities
+
+The following class methods return a Boolean value:
+
+    has_identity?(identity)
+    has_identity_at?(identity,date)
+    has_identity_at_present?(identity)
+    has_unlimited_identity?(identity)
+
+Let's presume there are only three identities (respectively countries): "DEU", "DDR" and "CL.
+"CL" is a static (or unlimited) identity with start date 0000-01-01 and end date 9999-12-31.
+"DEU" has 3 periods, it was changed in 1949-10-07 and 1990-10-03.
+"DDR" is a limited identity with start date 1949-10-07 and end date 1990-10-03.
+
+    Country.has_identity?('DEU')                            # true
+    Country.has_identity?('DDR')                            # true
+    Country.has_identity?('CL')                             # false
+
+    Country.has_identity_at?('DEU', Date.new(1949,10,6))    # true
+    Country.has_identity_at?('DEU', Date.new(1949,10,7))    # true
+    Country.has_identity_at?('DEU', Date.new(1990,10,2))    # true
+    Country.has_identity_at?('DEU', Date.new(1990,10,3))    # true
+
+    Country.has_identity_at?('DDR', Date.new(1949,10,6))    # false
+    Country.has_identity_at?('DDR', Date.new(1949,10,7))    # true
+    Country.has_identity_at?('DDR', Date.new(1990,10,2))    # true
+    Country.has_identity_at?('DDR', Date.new(1990,10,3))    # false
+
+    Country.has_identity_at_present?('DEU')                 # true
+    Country.has_identity_at_present?('DDR')                 # false
+    Country.has_identity_at_present?('CL')                  # true
+
+    Country.has_unlimited_identity?('DEU')                  # false
+    Country.has_unlimited_identity?('DDR')                  # false
+    Country.has_unlimited_identity?('CL')                   # true
+
+===== B. Query methods returning (further-refinable) queries
+
+...
+
+===== C. Query methods that return objects
+
+...
+
+===== D. Methods with limitations
+
+...
 
 ==== Associations
 

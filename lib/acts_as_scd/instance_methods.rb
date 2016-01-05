@@ -50,8 +50,8 @@ module ActsAsScd
     self.class.where(identity:identity).reorder('effective_from asc').limit(1).first
   end
 
-  def terminate_identity(date=Date.today)
-     date = self.class.effective_date(date)
+  def terminate_identity(date=nil)
+     date = self.class.effective_date(date || Date.today)
      update_attributes END_COLUMN=>date
   end
 

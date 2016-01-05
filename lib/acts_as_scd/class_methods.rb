@@ -159,8 +159,8 @@ module ActsAsScd
     # :unterminate - if the identity exists and is terminated, unterminate it (extending the last iteration to the new date)
     # :extend_from - if no prior iteration exists, extend effective_from to the start-of-time
     # (TODO: consider making :extend_from the default, adding an option for the opposite...)
-    def create_iteration(identity, attribute_changes, start=Date.today, options={})
-      start = effective_date(start)
+    def create_iteration(identity, attribute_changes, start=nil, options={})
+      start = effective_date(start || Date.today)
       transaction do
         current_record = find_by_identity_at(identity,start)
         if !current_record && options[:unterminate]
@@ -184,8 +184,8 @@ module ActsAsScd
       end
     end
 
-    def terminate_identity(identity, date=Date.today)
-      date = effective_date(date)
+    def terminate_identity(identity, date=nil)
+      date = effective_date(date || Date.today)
       transaction do
         current_record = find_by_identity_at(identity,date)
         current_record.update_attributes END_COLUMN=>date

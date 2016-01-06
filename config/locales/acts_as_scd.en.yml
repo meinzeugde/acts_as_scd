@@ -7,3 +7,5 @@ en:
       always: '-'
     errors:
       identity_exists: 'An entry for the identity %{identity} already exists.'
+      cannot_create_iteration_at_start_date: 'Can not split period at start-date.'
+      cannot_create_iteration_at_end_date: 'Can not split period at end-date.'

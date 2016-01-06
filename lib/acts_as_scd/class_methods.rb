@@ -149,9 +149,11 @@ module ActsAsScd
 
     # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
     def create_identity!(attributes, start_date=nil, end_date=nil)
-      start_date = (start_date.nil?) ? START_OF_TIME : start_date.to_date.strftime("%Y%m%d")
-      end_date = (end_date.nil?) ? END_OF_TIME : end_date.to_date.strftime("%Y%m%d")
-      create!(attributes.merge({START_COLUMN=>start_date,END_COLUMN=>end_date}))
+      begin
+        record = create_identity(attributes, start_date, end_date)
+        raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        record
+      end
     end
 
     # Create a new iteration
@@ -184,11 +186,49 @@ module ActsAsScd
       end
     end
 
+    # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
+    def create_iteration!(identity, attribute_changes, start=nil, options={})
+      begin
+        record = create_iteration(identity, attribute_changes, start, options)
+        raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        record
+      end
+    end
+
+    def update_iteration(identity, attribute_changes, date=nil)
+      date = effective_date(date || Date.today)
+      transaction do
+        current_record = find_by_identity_at(identity,date)
+        if current_record
+          current_record.send :update_attributes, attribute_changes
+        end
+        current_record
+      end
+    end
+
+    # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
+    def update_iteration!(identity, attribute_changes, date=nil)
+      begin
+        record = update_iteration(identity, attribute_changes, date)
+        raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        record
+      end
+    end
+
     def terminate_identity(identity, date=nil)
       date = effective_date(date || Date.today)
       transaction do
         current_record = find_by_identity_at(identity,date)
         current_record.update_attributes END_COLUMN=>date
+      end
+    end
+
+    # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
+    def terminate_identity!(identity, date=nil)
+      begin
+        record = terminate_identity(identity, date)
+        raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        record
       end
     end
 

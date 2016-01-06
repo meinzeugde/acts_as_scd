@@ -103,9 +103,21 @@ module ActsAsScd
     # model.validates_uniqueness_of IDENTITY_COLUMN, :scope=>[START_COLUMN, END_COLUMN], :message=> '[' + I18n.t('scd.errors.identity_in_use') + ']'
 
     model.before_create ->{
-        raise I18n.t('scd.errors.identity_exists',{:identity=>self.identity}) if(self.unlimited? && model.has_identity?(self.identity))
+      errors.add(:base, I18n.t('scd.errors.identity_exists',{:identity=>self.identity})) if(self.unlimited? && model.has_identity?(self.identity))
+      record = model.find_by_identity_at(self.identity,self.effective_from)
+      if record
+        errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_at_start_date',{:identity=>self.identity})) if(record.past_limited? && self.effective_from == record.effective_from)
+        errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_at_end_date',{:identity=>self.identity})) if(record.future_limited? && self.effective_from == (record.effective_to - 1))
+      end
+
     }
-    model.before_destroy :remove_this_iteration
+
+    model.before_destroy ->{
+      s = successor
+      s.update_attributes effective_from: self.effective_from if s
+      a = antecessor
+      a.update_attributes effective_to: self.effective_to if a
+    }
   end
 
 end

@@ -53,7 +53,11 @@ Rails.application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
+  # todo-matteo: extend rail's native resource routes to include these routes for all acts_as_scd models
   resources :countries do
-    get 'periods_by_identity/:id', action: :periods_by_identity, on: :collection
+    get 'combined_periods_by_identity/:id', action: :combined_periods_by_identity, on: :collection
+    get 'effective_periods_by_identity/:id', action: :effective_periods_by_identity, on: :collection
+    post 'create_iteration/:id', action: :create_iteration, on: :collection
+    delete 'terminate/:id', action: :terminate, on: :collection
   end
 end

@@ -90,3 +90,19 @@ centuria:
   identity: CTA
   effective_from: 20151201
   effective_to: 21151201
+
+landoftoday:
+  code: LOT
+  name: Land formerly founded today
+  area: 1
+  identity: LOT
+  effective_from: <%= Date.today.strftime("%Y%m%d").to_i %>
+  effective_to: 99999999
+
+landin10days:
+  code: LOF
+  name: Land formerly founded in the future
+  area: 1
+  identity: LOF
+  effective_from: <%= 10.days.since.strftime("%Y%m%d").to_i %>
+  effective_to: 99999999

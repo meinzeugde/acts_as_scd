@@ -84,6 +84,15 @@ ActiveRecord::Schema.define do
 
 end
 
+START_OF_TIME_FORMATTED = '0000-01-01'
+START_OF_TIME = 0
+END_OF_TIME_FORMATTED = '9999-12-31'
+END_OF_TIME = 99999999
+TODAY_FORMATTED = Date.today.strftime('%Y-%m-%d')
+TODAY = Date.today.strftime('%Y%m%d').to_i
+FUTURE_FORMATTED = 10.days.since.strftime('%Y-%m-%d')
+FUTURE = 10.days.since.strftime('%Y%m%d').to_i
+
 class ActiveSupport::TestCase
   def assert_raises_with_message(exception, msg, &block)
     block.call

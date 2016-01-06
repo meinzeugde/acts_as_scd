@@ -368,7 +368,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_nil Country.current.where(identity: 'DDR').first
     assert_equal uk2, Country.current.where(identity: 'GBR').first
     assert_equal sco, Country.current.where(identity: 'SCO').first
-    assert_equal 5, Country.current.count
+    assert_equal 7, Country.current.count
 
     assert_equal de1, Country.initial.where(identity: 'DEU').first
     assert_nil        Country.initial.where(identity: 'DDR').first
@@ -447,8 +447,8 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
     c = Country.scoped
 
-    assert_equal %w(CG CL CTA DDR DEU GBR SCO), Country.ordered_identities
-    assert_equal %w(CG CL DEU GBR SCO), Country.current.ordered_identities
+    assert_equal %w(CG CL CTA DDR DEU GBR LOF LOT SCO), Country.ordered_identities
+    assert_equal %w(CG CL DEU GBR LOF LOT SCO), Country.current.ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.at_date(Date.new(2015,1,1)).ordered_identities
     assert_equal %w(CG CL DEU GBR SCO), Country.at_date(Date.new(2014,9,18)).ordered_identities
     assert_equal %w(CG CL DEU GBR), Country.at_date(Date.new(2014,9,17)).ordered_identities
@@ -473,7 +473,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal %w(CG CL DEU GBR), Country.identities_at(Date.new(1949,10,6)).sort
     assert_equal %w(CG CL DEU GBR), Country.identities_at(Date.new(1940,1,1)).sort
 
-    assert_equal %w(CG CL DEU GBR SCO), Country.current_identities.sort
+    assert_equal %w(CG CL DEU GBR LOF LOT SCO), Country.current_identities.sort
 
     assert_equal [ActsAsScd::Period[0, 99999999]],
                  Country.where(identity: 'CL').effective_periods
@@ -486,7 +486,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal [ActsAsScd::Period[0, 19491007], ActsAsScd::Period[19491007, 19901003], ActsAsScd::Period[19901003, 99999999]],
                  Country.where(identity: 'DEU').effective_periods
     assert_equal [[0,19491007], [0, 20140302], [0, 20140918], [0, 99999999], [19491007, 19901003], [19901003, 99999999],
-                  [20140302, 20140507], [20140507, 99999999], [20140918, 99999999], [20151201, 21151201]].map{|p| ActsAsScd::Period[*p]},
+                  [20140302, 20140507], [20140507, 99999999], [20140918, 99999999], [20151201, 21151201], [TODAY, 99999999], [FUTURE, 99999999]].map{|p| ActsAsScd::Period[*p]},
                  Country.effective_periods
 
   end

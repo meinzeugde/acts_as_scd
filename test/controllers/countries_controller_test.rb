@@ -7,15 +7,40 @@ class CountriesControllerTest < ActionController::TestCase
   ### INDEX
   ######
   test "should get all countries today" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o============^========^======'=====^=o
+    # CTA |                         <--'-->    |
+    # CL  |----------------------------'-------|
+    # DEU |----------><--------><------'-------|
+    # LOT |                            '-------|
+    # SCO |                        <---'-------|
+    # GBR |-----------------------><---'-------|
+    # CG  |-----------------------><-><'-------|
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :index
     assert_response :success
+    assert_equal 'CTA,CL,DEU,LOT,SCO,GBR,CG',
+                 json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
     assert_equal 'Centuria,Eternal Caledonia,Germany,Land formerly founded today,Scotland,United Kingdom,Volatile Changedonia',
                  json_response.map{|r|r['name']}.sort.uniq.join(',')
   end
 
   test "should get all countries at specific date in the past" do
+    # SOT         1949      1990   Today  2115   EOT
+    #     o=========='=========^=======^=====^=o
+    # CL  |----------'-------------------------|
+    # DEU |----------'<--------><--------------|
+    # GBR |----------'------------><-----------|
+    # CG  |----------'------------><-><--------|
+    #     o=========='=========================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :index, {'scd_date' => '1949-01-01'}
     assert_response :success
+    assert_equal 'CL,DEU,GBR,CG',
+                 json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
     assert_equal 'Eternal Caledonia,Germany,United Kingdom,Volatile Changedonia',
                  json_response.map{|r|r['name']}.sort.uniq.join(',')
   end
@@ -31,6 +56,12 @@ class CountriesControllerTest < ActionController::TestCase
   ### SHOW
   ######
   test "should get a specific country today" do
+    # SOT         1949      1990   Today  2115   EOT
+    #     o=========='=========^======='=====^=o
+    # DEU |----------'<--------><------'-------|
+    #     o=========='=========================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :show, {'id' => 'DEU'}
     assert_response :success
     assert_equal 'Germany', json_response['name']
@@ -40,6 +71,12 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should get specific country in the past" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o==========='========^=======^=====^=o
+    # DEU |-----------'<-------><--------------|
+    #     o==========='========================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :show, {'id' => 'DEU', 'scd_date' => '1949-01-01'}
     assert_response :success
     assert_equal 'Germany', json_response['name']
@@ -88,6 +125,12 @@ class CountriesControllerTest < ActionController::TestCase
   ### CREATE
   ######
   test "should create a new static country" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # STC |++++++++++++++++++++++++++++++++++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = New Period)
     post :create, {country: {name: 'Static Country', code: 'STC'}}
     assert_response :success
     # return the created period
@@ -95,9 +138,22 @@ class CountriesControllerTest < ActionController::TestCase
     assert_equal "STC", json_response['identity']
     assert_equal START_OF_TIME, json_response['effective_from']
     assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'STC'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should create a new non-static country with start date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CWS |           <++++++++++++++++++++++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = New Period)
     post :create, {country: {name: 'Country with Start Date', code: 'CWS', effective_from: '1949-01-01'}}
     assert_response :success
     # return the created period
@@ -105,9 +161,22 @@ class CountriesControllerTest < ActionController::TestCase
     assert_equal "CWS", json_response['identity']
     assert_equal 19490101, json_response['effective_from']
     assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CWS'}
+    assert_response :success
+    assert_equal '1949-01-01', json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should create a new non-static country with start date and end date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CSE |           <++++++++>               |
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = New Period)
     post :create, {country: {name: 'Country with Start Date and End Date', code: 'CSE', effective_from: '1949-01-01', effective_to: '1990-10-03'}}
     assert_response :success
     # return the created period
@@ -115,32 +184,104 @@ class CountriesControllerTest < ActionController::TestCase
     assert_equal "CSE", json_response['identity']
     assert_equal 19490101, json_response['effective_from']
     assert_equal 19901003, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CSE'}
+    assert_response :success
+    assert_equal '1949-01-01', json_response[0]['start']
+    assert_equal '1990-10-03', json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should create a new period for a non-static country which does not interfere with existing period" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DDR1|           <-------->               |
+    # DDR2|                     <++++++++++++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = New Period)
+    post :create, {country: {name: 'Germany formerly known as East Germany', code: 'DDR', effective_from: '1990-10-03'}}
+    assert_response :success
+    # return the created period
+    assert_equal 'Germany formerly known as East Germany', json_response['name']
+    assert_equal 'DDR', json_response['identity']
+    assert_equal 19901003, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
 
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal '1949-10-07', json_response[0]['start']
+    assert_equal '1990-10-03', json_response[0]['end']
+    assert_equal '1990-10-03', json_response[1]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[1]['end']
+    assert_nil json_response[2]
   end
 
   test "should not create a static country which already exists as static country" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CL 1|------------------------------------|
+    # CL 2|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Period)
     post :create, {country: {name: 'Eternal Caledonia', code: 'CL'}}
     assert_response :internal_server_error
     assert_equal 'Validation failed: An entry for the identity CL already exists.', json_response['error']
   end
 
   test "should not create a static country which already exists as non-static country" do
-    post :create, {country: {name: 'Volatile Changedonia', code: 'CG'}}
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DDR1|           <-------->               |
+    # DDR2|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Period)
+    post :create, {country: {name: 'Eternal East Germany', code: 'DDR'}}
     assert_response :internal_server_error
-    assert_equal 'Validation failed: An entry for the identity CG already exists.', json_response['error']
+    assert_equal 'Validation failed: An entry for the identity DDR already exists.', json_response['error']
   end
 
-  test "should not create a new period for a non-static country which interferes with existing period" do
+  test "should not create a new period for a non-static country which interferes with existing period before end" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DDR1|           <-------->               |
+    # DDR2|                 <xxxxxxxxxxxxxxxxxx|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Period)
+    post :create, {country: {name: 'Earlier East Germany', code: 'DDR', effective_from: '1970-10-03'}}
+    assert_response :internal_server_error
+    assert_equal 'Validation failed: The period since 1970-10-03 for the identity DDR would overlap an existing period.', json_response['error']
+  end
 
+  test "should not create a new period for a non-static country which interferes with existing period before start" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DDR1|           <-------->               |
+    # DDR2|xxxxxxxxxxxxxxxx>                   |
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Period)
+    post :create, {country: {name: 'Earliest East Germany', code: 'DDR', effective_to: '1970-10-03'}}
+    assert_response :internal_server_error
+    assert_equal 'Validation failed: The period to 1970-10-03 for the identity DDR would overlap an existing period.', json_response['error']
   end
 
   ######
   ### CREATE_ITERATION
   ######
   test "should split a static country by generating a new period starting today" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CL1 |------------------------------------|
+    # CL2 |+++++++++++++++++++++++++++><+++++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
     post :create_iteration, id: 'CL', country: {name: 'New Caledonia', code: 'CL'}
     assert_response :success
     # return the created period
@@ -199,7 +340,13 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should split present period of non-static country which starts in the past by generating a new period starting today" do
-    # this will split up the present period today
+    # SOT          1950     1990   Today  2115   EOT
+    #     o============^========^======^=====^=o
+    # DEU1|----------><--------><--------------|
+    # DEU2|----------><--------><+++++><+++++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
     patch :create_iteration, id: 'DEU', country: {name: 'Germany Today', effective_from: TODAY_FORMATTED}
     assert_response :success
     # return the updated period
@@ -222,27 +369,52 @@ class CountriesControllerTest < ActionController::TestCase
     assert_nil json_response[4]
   end
 
+  test "should split past period of non-static country" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o============^========^======^=====^=o
+    # DEU1|----------><--------><--------------|
+    # DEU2|++++><++++><--------><--------------|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+  end
+
+  test "should split future period of non-static country" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o============^========^======^=====^=o
+    # LOF1|                              <-----|
+    # LOF2|                              <-><--|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+  end
+
   test "should not split period of non-static country at start date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o============^========^======^=====^=o
+    # LOT1|                            <-------|
+    # LOT2|                            <x><xxxx|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Periods)
     patch :create_iteration, id: 'LOT', country: {name: 'Mayfly Land', effective_from: TODAY_FORMATTED}
     assert_response :internal_server_error
     assert_equal 'Validation failed: Can not split period at start-date.', json_response['error']
   end
 
   test "should not split period of non-static country at end date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DDR1|           <-------->               |
+    # DDR2|           <xxxxx><x>               |
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Periods)
+
     # attention: the end_date is the value of effective_to decreased by 1
-    patch :create_iteration, id: 'DDR', country: {name: 'GDR', effective_from: "1990-10-02"}
+    patch :create_iteration, id: 'DDR', country: {name: 'DDR', effective_from: "1990-10-02"}
     assert_response :internal_server_error
     assert_equal 'Validation failed: Can not split period at end-date.', json_response['error']
-  end
-
-  test "should not split past period of non-static country" do
-    # no test here, just an explanation, that this behaviour is not implemented/intended
-  end
-
-  test "should not split future period of non-static country" do
-    # no test here, just an explanation, that this behaviour is not implemented/intended
-    # use create methods instead
-    # the only way to create a future period is by plitting a static country
   end
 
   ######
@@ -289,6 +461,13 @@ class CountriesControllerTest < ActionController::TestCase
   ### TERMINATE
   ######
   test "should terminate a static country today" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o============^========^======^=====^=o
+    # CL1 |------------------------------------|
+    # CL2 |---------------------------->       |
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time)
     delete :terminate, id: 'CL'
     assert_response :success
     # return the destroyed period in case of implementing a restore functionality

@@ -147,6 +147,10 @@ module ActsAsScd
       includes?(Date.today)
     end
 
+    def overlap?(period)
+      (@start < period.end || @end > period.start)
+    end
+
     def reference_date
       if @start <= START_OF_TIME
         if @end >= END_OF_TIME

@@ -176,7 +176,7 @@ module ActsAsScd
         end
         start = START_OF_TIME if options[:extend_from] && !identity_exists?(identity)
         attributes = attributes.merge(START_COLUMN=>start).merge(attribute_changes.with_indifferent_access.except(START_COLUMN, END_COLUMN))
-        new_record = create(attributes)
+        new_record = create(attributes.merge(:acts_as_scd_create_iteration => true))
         if new_record.errors.blank? && current_record
           # current_record.update_attributes END_COLUMN=>start
           current_record.send :"#{END_COLUMN}=", start

@@ -7,3 +7,5 @@ de:
       always: '-'
     errors:
       identity_exists: 'Es existiert bereits ein Eintrag für die Identität %{identity}.'
+      cannot_create_iteration_at_start_date: 'Kann Zeiträume nicht am Startdatum aufteilen.'
+      cannot_create_iteration_at_end_date: 'Kann Zeiträume nicht am Enddatum aufteilen.'

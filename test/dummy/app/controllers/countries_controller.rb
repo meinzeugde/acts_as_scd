@@ -1,3 +1,13 @@
+###
+# refer to the countries_controller_test.rb for further information
+#
+# this Controller shows a set of all possible and useful resource (CRUD) methods
+# note that all methods are used as the bang-version, since the goal is to achieve an api for a clientside-framework
+# see http://stackoverflow.com/a/1761180 for infos about Active Record's bang-methods
+#
+# you're free to use the none-bang versions, which return false instead of an exception if an error occurs
+# the bang-free versions are tested in the model tests
+###
 class CountriesController < ApplicationController
   def index
     begin
@@ -15,6 +25,7 @@ class CountriesController < ApplicationController
     end
   end
 
+  # todo-matteo: try to combined with create_iteration
   def create
     begin
       country = Country.create_identity!(map_countries_params,map_countries_effective_from,map_countries_effective_to)
@@ -25,6 +36,7 @@ class CountriesController < ApplicationController
     end
   end
 
+  # todo-matteo: try to combined with create
   def create_iteration
     begin
       country = Country.create_iteration!(params[:id],map_countries_params,map_countries_effective_from)
@@ -48,6 +60,7 @@ class CountriesController < ApplicationController
     end
   end
 
+  # consider renaming to terminate_identity
   def terminate
     begin
       terminated_country = Country.terminate_iteration!(params[:id],map_scd_date)
@@ -60,7 +73,47 @@ class CountriesController < ApplicationController
 
   def destroy
     begin
-      # todo-matteo: implement
+      # todo-matteo: implement a method which destroys the whole identity (all records) and all associations
+      # http://stackoverflow.com/a/22757533
+
+      # destroyed_country = Country.destroy_identity!(params[:id])
+
+      # render :json => destroyed_country
+    rescue Exception => e
+      render :json => {:error => e.message}, :status => :internal_server_error
+    end
+  end
+
+  def destroy_iteration
+    begin
+      destroyed_country = Country.destroy_iteration!(params[:id],map_scd_date)
+
+      render :json => destroyed_country
+    rescue Exception => e
+      render :json => {:error => e.message}, :status => :internal_server_error
+    end
+  end
+
+  # consider as alternative to destroy
+  def delete
+    begin
+      # todo-matteo: implement a method which deletes the whole identity (all records) but leave the associations
+      # http://stackoverflow.com/a/22757533
+
+      # deleted_country = Country.delete_identity!(params[:id])
+
+      # render :json => deleted_country
+    rescue Exception => e
+      render :json => {:error => e.message}, :status => :internal_server_error
+    end
+  end
+
+  def delete_iteration
+    begin
+      # todo-matteo: implement a method which deletes a period but leave the associations
+      # deleted_country = Country.delete_iteration!(params[:id],map_scd_date)
+
+      # render :json => destroyed_country
     rescue Exception => e
       render :json => {:error => e.message}, :status => :internal_server_error
     end

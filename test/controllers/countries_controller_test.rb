@@ -977,26 +977,124 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   ######
-  ### DESTROY
+  ### DESTROY ITERATION
   ######
   test "should remove static country" do
-    # no period splitting!
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # CL  |----------------------------'-------| Eternal Caledonia
+    #     |                            '       | [Idenity Removed]
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time /  ' = Selected Date)
+
     # be careful: this may not be suitable in terms of SCD2
+    delete :destroy_iteration, id: 'CL'
+    assert_response :success
+    # returns the destroyed period
+    assert_equal 'CL', json_response['identity']
+    assert_equal START_OF_TIME, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CL'}
+    assert_response :success
+    assert_nil json_response[0]
   end
 
   test "should remove present period of non-static country" do
-    # no period splitting!
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DEU1|----------><--------><--------------| Germany
+    # DEU2|----------><-------->               | Germany
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time /  ' = Selected Date)
+
     # be careful: this may not be suitable in terms of SCD2
+    delete :destroy_iteration, id: 'DEU'
+    assert_response :success
+    # returns the destroyed period
+    assert_equal 'DEU', json_response['identity']
+    assert_equal 19901003, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal '1949-10-07', json_response[0]['end']
+    assert_equal '1949-10-07', json_response[1]['start']
+    assert_equal '1990-10-03', json_response[1]['end']
+    assert_nil json_response[2]
   end
 
   test "should remove future period of non-static country" do
-    # no period splitting!
-    # be careful: this may not be suitable in terms of SCD2
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # LOF |                            ' <-----| Land of the Future
+    #     |                                    | [Idenity Removed]
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+    delete :destroy_iteration, id: 'LOF', scd_date: FUTURE_FORMATTED
+    assert_response :success
+    # returns the destroyed period
+    assert_equal 'LOF', json_response['identity']
+    assert_equal FUTURE, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOF'}
+    assert_response :success
+    assert_nil json_response[0]
   end
 
   test "should remove past period of non-static country" do
-    # no period splitting!
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^==='====^=======^=====^=o
+    # DEU1|----------><---'----><--------------| Germany
+    # DEU2|---------->    '     <--------------| Germany
+    #     o==============='====================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+
     # be careful: this may not be suitable in terms of SCD2
+    delete :destroy_iteration, id: 'DEU', scd_date: '1970-01-01'
+    assert_response :success
+    # returns the destroyed period
+    assert_equal 'DEU', json_response['identity']
+    assert_equal 19491007, json_response['effective_from']
+    assert_equal 19901003, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal '1949-10-07', json_response[0]['end']
+    assert_equal '1990-10-03', json_response[1]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[1]['end']
+    assert_nil json_response[2]
   end
 
+  test "should not remove period of non-static country that does not exist" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # DDR1|           <-------->       '       |
+    # DDR2|           <-------->       '       |
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+
+    delete :destroy_iteration, id: 'DDR', scd_date: TODAY_FORMATTED
+    assert_response :internal_server_error
+    assert_equal 'Can not delete a period that does not exist (nor any existing associations).', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal "1949-10-07", json_response[0]['start']
+    assert_equal "1990-10-03", json_response[0]['end']
+    assert_nil json_response[1]
+  end
 end

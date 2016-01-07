@@ -141,13 +141,6 @@ module ActsAsScd
         return false
       end
     }, :if => :acts_as_scd_create_iteration
-
-    model.before_destroy ->{
-      s = successor
-      s.update_attributes effective_from: self.effective_from if s
-      a = antecessor
-      a.update_attributes effective_to: self.effective_to if a
-    }
   end
 
 end

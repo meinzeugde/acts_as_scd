@@ -58,6 +58,7 @@ Rails.application.routes.draw do
     get 'combined_periods_by_identity/:id', action: :combined_periods_by_identity, on: :collection
     get 'effective_periods_by_identity/:id', action: :effective_periods_by_identity, on: :collection
     post 'create_iteration/:id', action: :create_iteration, on: :collection
+    delete 'destroy_iteration/:id', action: :destroy_iteration, on: :collection
     delete 'terminate/:id', action: :terminate, on: :collection
   end
 end

@@ -242,6 +242,29 @@ module ActsAsScd
       end
     end
 
+    # returns destroyed record or false
+    def destroy_iteration(identity, date=nil)
+      date = effective_date(date || Date.today)
+      transaction do
+        current_record = find_by_identity_at(identity,date)
+        if current_record
+          current_record.send :destroy
+        end
+        return (current_record.nil? ? false : current_record)
+      end
+    end
+
+    # returns exception if model could not be destroyed
+    # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
+    def destroy_iteration!(identity, date=nil)
+      begin
+        record = destroy_iteration(identity, date)
+        raise I18n.t('scd.errors.cannot_destroy_iteration_that_does_not_exist') unless record
+        raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        record
+      end
+    end
+
     # Association yo be used in a parent class which has identity and has children
     # which have identities too;
     # the association is implemented through the identity, not the PK.

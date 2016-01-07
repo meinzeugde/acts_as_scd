@@ -108,7 +108,7 @@ breaks down the division between the countries at, say, 1990-10-03:
   deu = Country.current.where(identity: 'DEU').first
   ddr = Country.current.where(identity: 'DDR').first
   merged_area = deu.area + ddr.area
-  Country.current.where(code: 'DEU').first.terminate_identity(date)
+  Country.current.where(code: 'DEU').first.terminate_iteration(date)
   Country.create_iteration 'DEU', {area: merged_area}, date
 
   ....

@@ -104,7 +104,7 @@ module ActsAsScd
         @missing_items = @pre_items - @old_items
       else
         scoped_model.current.where('effective_from < :fecha', fecha: model.effective_date(fecha)).each do |record|
-          record.terminate_identity fecha
+          record.terminate_at fecha
           @missing_items += 1
         end
       end

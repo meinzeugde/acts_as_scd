@@ -170,7 +170,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
     date3 = Date.new(2014,04,02)
     # t3_2.terminate_identity(date3)
-    Country.terminate_identity 'T3', date3
+    Country.terminate_iteration 'T3', date3
     t3.reload
     t3_2.reload
     t3_3.reload

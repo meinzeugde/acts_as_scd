@@ -50,10 +50,9 @@ class CountriesController < ApplicationController
 
   def terminate
     begin
-      old_country = Country.find_by_identity_at_present_or!(params[:id],map_countries_effective_from)
-      Country.terminate_identity(params[:id],map_countries_effective_from)
+      terminated_country = Country.terminate_iteration!(params[:id],map_scd_date)
 
-      render :json => old_country
+      render :json => terminated_country
     rescue Exception => e
       render :json => {:error => e.message}, :status => :internal_server_error
     end

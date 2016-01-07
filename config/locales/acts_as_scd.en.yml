@@ -11,3 +11,8 @@ en:
       cannot_create_iteration_at_end_date: 'Can not split period at end-date.'
       cannot_create_iteration_that_does_not_exist: 'Can not split a period that does not exist.'
       cannot_update_iteration_that_does_not_exist: 'Can not update a period that does not exist.'
+      cannot_terminate_iteration_that_does_not_exist: 'Can not terminate a period that does not exist.'
+      cannot_terminate_iteration_at_start_date: 'Can not terminate period at start-date.'
+      cannot_terminate_iteration_at_end_date: 'Can not terminate period at end-date.'
+      cannot_destroy_iteration_that_does_not_exist: 'Can not delete a period that does not exist (nor any existing associations).'
+      cannot_delete_iteration_that_does_not_exist: 'Can not delete a period that does not exist.'

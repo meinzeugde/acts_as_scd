@@ -739,7 +739,7 @@ class CountriesControllerTest < ActionController::TestCase
     assert_nil json_response[0]
   end
 
-  test "should not update the period's start-date of static country by ignoring the change" do
+  test "should not update the period's start date of static country by ignoring the change" do
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^========^======='=====^=o
     # CL1 |----------------------------'-------| Eternal Caledonia
@@ -761,11 +761,11 @@ class CountriesControllerTest < ActionController::TestCase
     assert_nil json_response[1]
   end
 
-  test "should not update the period's end-date of static country by ignoring the change" do
+  test "should not update the period's end date of static country by ignoring the change" do
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^========^======='=====^=o
     # CL1 |----------------------------'-------| Eternal Caledonia
-    # CL2 |xxxxxxxxxxxxxxxxxxxxxxxxxxxx>       | Eternal Caledonia
+    # CL2 |xxxxxxxxxxxxxxxxxxxxxxxxxxxx'       | Eternal Caledonia
     #     o============================'=======o
     #
     # (SOT = Start of time / EOT = End of time / x = Ignored Period)
@@ -786,21 +786,16 @@ class CountriesControllerTest < ActionController::TestCase
   ######
   ### TERMINATE
   ######
-  test "should terminate a static country today" do
+  test "should terminate static country at the end of today" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o===========^========^=======^=====^=o
-    # CL1 |------------------------------------|
-    # CL2 |---------------------------->       |
-    #     o====================================o
+    #     o===========^========^======='=====^=o
+    # CL1 |----------------------------'-------|
+    # CL2 |++++++++++++++++++++++++++++'       |
+    #     o============================'=======o
     #
-    # (SOT = Start of time / EOT = End of time)
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / + = Terminated Period)
     delete :terminate, id: 'CL'
     assert_response :success
-    # return the destroyed period in case of implementing a restore functionality
-    assert_equal 'Eternal Caledonia', json_response['name']
-    assert_equal 'CL', json_response['identity']
-    assert_equal START_OF_TIME, json_response['effective_from']
-    assert_equal END_OF_TIME, json_response['effective_to']
 
     # check all periods
     get :effective_periods_by_identity, {'id' => 'CL'}
@@ -810,21 +805,16 @@ class CountriesControllerTest < ActionController::TestCase
     assert_nil json_response[1]
   end
 
-  test "should terminate a static country in the future" do
+  test "should terminate static country at the end in the future" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o===========^========^=======^=====^=o
-    # CL1 |------------------------------------|
-    # CL2 |------------------------------>     |
-    #     o====================================o
+    #     o===========^========^=======^='===^=o
+    # CL1 |------------------------------'-----|
+    # CL2 |++++++++++++++++++++++++++++++'     |
+    #     o=============================='=====o
     #
-    # (SOT = Start of time / EOT = End of time)
-    delete :terminate, id: 'CL', country: {effective_from: FUTURE_FORMATTED}
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / + = Terminated Period)
+    delete :terminate, id: 'CL', scd_date: FUTURE_FORMATTED
     assert_response :success
-    # return the destroyed period in case of implementing a restore functionality
-    assert_equal 'Eternal Caledonia', json_response['name']
-    assert_equal 'CL', json_response['identity']
-    assert_equal START_OF_TIME, json_response['effective_from']
-    assert_equal END_OF_TIME, json_response['effective_to']
 
     # check all periods
     get :effective_periods_by_identity, {'id' => 'CL'}
@@ -834,29 +824,155 @@ class CountriesControllerTest < ActionController::TestCase
     assert_nil json_response[1]
   end
 
-  test "should terminate a static country in the past" do
+  test "should terminate static country at the end in the past" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o===========^========^=======^=====^=o
-    # CL1 |------------------------------------|
-    # CL2 |---------------->                   |
-    #     o====================================o
+    #     o===========^===='===^=======^=====^=o
+    # CL1 |----------------'-------------------|
+    # CL2 |++++++++++++++++'                   |
+    #     o================'===================o
     #
-    # (SOT = Start of time / EOT = End of time)
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / + = Terminated Period)
 
     # be careful: this may not be suitable in terms of SCD2
-    delete :terminate, id: 'CL', country: {effective_from: '1965-01-01'}
+    delete :terminate, id: 'CL', scd_date: '1965-01-01'
     assert_response :success
-    # return the destroyed period in case of implementing a restore functionality
-    assert_equal 'Eternal Caledonia', json_response['name']
-    assert_equal 'CL', json_response['identity']
-    assert_equal START_OF_TIME, json_response['effective_from']
-    assert_equal END_OF_TIME, json_response['effective_to']
 
     # check all periods
     get :effective_periods_by_identity, {'id' => 'CL'}
     assert_response :success
     assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
     assert_equal '1965-01-01', json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should terminate present period of non-static country at the end today" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # DEU1|----------><--------><------'-------|
+    # DEU2|----------><--------><++++++'       |
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / + = Terminated Period)
+    delete :terminate, id: 'DEU', scd_date: TODAY_FORMATTED
+    assert_response :success
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal '1949-10-07', json_response[0]['end']
+    assert_equal '1949-10-07', json_response[1]['start']
+    assert_equal '1990-10-03', json_response[1]['end']
+    assert_equal '1990-10-03', json_response[2]['start']
+    assert_equal TODAY_FORMATTED, json_response[2]['end']
+    assert_nil json_response[3]
+  end
+
+  test "should terminate future period of non-static country at the end of a specific date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^==='=^=o
+    # LOF1|                              <-'---|
+    # LOF2|                              <+'   |
+    #     o================================'===o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / + = Terminated Period)
+    far_future_formatted = 100.days.since.strftime('%Y-%m-%d')
+    far_future = 100.days.since.strftime('%Y%m%d').to_i
+
+    delete :terminate, id: 'LOF', scd_date: far_future_formatted
+    assert_response :success
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOF'}
+    assert_response :success
+    assert_equal FUTURE_FORMATTED, json_response[0]['start']
+    assert_equal far_future_formatted, json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should terminate past period of non-static country at the end of a specific date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=============^=o
+    # DEU1|----------><--------><--------------|
+    # DEU2|----------><+++>     <--------------|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / + = Terminated Period)
+
+    # be careful: this may not be suitable in terms of SCD2
+    delete :terminate, id: 'DEU', scd_date: '1970-01-01'
+    assert_response :success
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal '1949-10-07', json_response[0]['end']
+    assert_equal '1949-10-07', json_response[1]['start']
+    assert_equal '1970-01-01', json_response[1]['end']
+    assert_equal '1990-10-03', json_response[2]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[2]['end']
+    assert_nil json_response[3]
+  end
+
+  test "should not terminate period of non-static country at start date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # LOT1|                            '-------|
+    # LOT2|                            'x>     |
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / x = Rejected Period)
+    delete :terminate, id: 'LOT', scd_date: TODAY_FORMATTED
+    assert_response :internal_server_error
+    assert_equal 'Validation failed: Can not terminate period at start-date.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOT'}
+    assert_response :success
+    assert_equal TODAY_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should not terminate period of non-static country at end date" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========'=======^=====^=o
+    # DDR1|           <--------'               |
+    # DDR2|           <xxxxxxxx'               |
+    #     o===================='===============o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / x = Rejected Periods)
+
+    # attention: the end_date is the value of effective_to decreased by 1
+    delete :terminate, id: 'DDR', scd_date: '1990-10-02'
+    assert_response :internal_server_error
+    assert_equal 'Validation failed: Can not terminate period at end-date.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal "1949-10-07", json_response[0]['start']
+    assert_equal "1990-10-03", json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should not terminate period of non-static country at a specific date on which no period exists" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # DDR |           <-------->       '       |
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date / x = Rejected Periods)
+    delete :terminate, id: 'DDR', scd_date: TODAY_FORMATTED
+    assert_response :internal_server_error
+    assert_equal 'Can not terminate a period that does not exist.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal "1949-10-07", json_response[0]['start']
+    assert_equal "1990-10-03", json_response[0]['end']
     assert_nil json_response[1]
   end
 

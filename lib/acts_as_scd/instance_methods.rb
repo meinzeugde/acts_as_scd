@@ -50,7 +50,11 @@ module ActsAsScd
     self.class.where(identity:identity).reorder('effective_from asc').limit(1).first
   end
 
-  def terminate_identity(date=nil)
+  # the behaviour of this method is a bit different than the class method
+  #   while the class method takes a date and terminates the fitting period,
+  #   this simply sets a new end date for the current iteration
+  def terminate_at(date=nil)
+    # todo-matteo: implement check to prevent period overlapping
      date = self.class.effective_date(date || Date.today)
      update_attributes END_COLUMN=>date
   end
@@ -58,10 +62,13 @@ module ActsAsScd
   def ended?
     effective_to < END_OF_TIME
   end
+  alias_method :terminated?, :ended?
+
 
   def ended_at?(date)
     effective_to <= self.class.effective_date(date)
   end
+  alias_method :terminated_at?, :ended_at?
 
   def effective_period
     Period[effective_from, effective_to]

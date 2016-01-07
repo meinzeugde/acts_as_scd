@@ -10,7 +10,8 @@ class CountriesControllerTest < ActionController::TestCase
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^=========^======'=====^=o
     # CTA |                            '-----> | [x] Centuria
-    # CL  |----------------------------'-------| [x] Caledonia
+    # CL  |----------------------------'-------| [x] Eternal Caledonia
+    # DDR |           <-------->       '       | [-] East Germany
     # DEU |----------><--------><------'-------| [x] Germany
     # LOF |                            ' <-----| [-] Land formerly founded in the future
     # LOT |                            '-------| [x] Land formerly founded today
@@ -30,23 +31,24 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should get all countries at specific date in the past" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o=========='^=========^======^=====^=o
-    # CTA |          '                 <-----> | [-] Centuria
-    # CL  |----------'-------------------------| [x] Caledonia
-    # DEU |----------'<--------><--------------| [x] Germany
-    # LOF |          '                   <-----| [-] Land formerly founded in the future
-    # LOT |          '                 <-------| [-] Land formerly founded today
-    # SCO |          '             <-----------| [-] Scotland
-    # GBR |----------'------------><-----------| [x] United Kingdom
-    # CG  |----------'------------><-><--------| [x] Volatile Changedonia
-    #     o=========='=========================o
+    #     o==========='=========^======^=====^=o
+    # CTA |           '                <-----> | [-] Centuria
+    # DDR |           '-------->               | [x] East Germany
+    # CL  |-----------'------------------------| [x] Eternal Caledonia
+    # DEU |-----------'--------><--------------| [x] Germany
+    # LOF |           '                  <-----| [-] Land formerly founded in the future
+    # LOT |           '                <-------| [-] Land formerly founded today
+    # SCO |           '            <-----------| [-] Scotland
+    # GBR |-----------'-----------><-----------| [x] United Kingdom
+    # CG  |-----------'-----------><-><--------| [x] Volatile Changedonia
+    #     o==========='========================o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
-    get :index, {'scd_date' => '1949-01-01'}
+    get :index, {'scd_date' => '1950-01-01'}
     assert_response :success
-    assert_equal 'CL,DEU,GBR,CG',
+    assert_equal 'DDR,CL,DEU,GBR,CG',
                  json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
-    assert_equal 'Eternal Caledonia,Germany,United Kingdom,Volatile Changedonia',
+    assert_equal 'East Germany,Eternal Caledonia,Germany,United Kingdom,Volatile Changedonia',
                  json_response.map{|r|r['name']}.sort.uniq.join(',')
   end
 
@@ -54,6 +56,7 @@ class CountriesControllerTest < ActionController::TestCase
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^=========^======^='===^=o
     # CTA |                            <-'---> | [x] Centuria
+    # DDR |           <-------->         '     | [-] East Germany
     # CL  |------------------------------'-----| [x] Caledonia
     # DEU |----------><--------><--------'-----| [x] Germany
     # LOF |                              '-----| [x] Land formerly founded in the future
@@ -107,9 +110,9 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should get specific country in the future" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o=========='^========^=======^=====^=o
+    #     o===========^========^=======^='===^=o
     # LOF |                              '-----| [x] Land formerly founded in the future
-    #     o=========='=========================o
+    #     o=============================='=====o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :show, {'id' => 'LOF', 'scd_date' => FUTURE_FORMATTED}
@@ -144,7 +147,8 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should get all combined periods of a specific country" do
-    # todo-matteo: show the difference between effective and combined periods
+    # todo-matteo: consider removing this test and the function 'combined_periods_by_identity' at all,
+    #   because due to careful validation process it is not allowed to create overlapped periods
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^=========^============^=o
     # DEU |---------->                         |
@@ -273,6 +277,13 @@ class CountriesControllerTest < ActionController::TestCase
     post :create, {country: {name: 'Eternal Caledonia', code: 'CL'}}
     assert_response :internal_server_error
     assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CL'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should not create a static country which already exists as non-static country" do
@@ -286,6 +297,13 @@ class CountriesControllerTest < ActionController::TestCase
     post :create, {country: {name: 'Eternal East Germany', code: 'DDR'}}
     assert_response :internal_server_error
     assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal '1949-10-07', json_response[0]['start']
+    assert_equal '1990-10-03', json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should not create a new period for a non-static country which interferes with existing period before end" do
@@ -299,6 +317,13 @@ class CountriesControllerTest < ActionController::TestCase
     post :create, {country: {name: 'Earlier East Germany', code: 'DDR', effective_from: '1970-10-03'}}
     assert_response :internal_server_error
     assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal '1949-10-07', json_response[0]['start']
+    assert_equal '1990-10-03', json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should not create a new period for a non-static country which interferes with existing period before start" do
@@ -312,6 +337,13 @@ class CountriesControllerTest < ActionController::TestCase
     post :create, {country: {name: 'Earliest East Germany', code: 'DDR', effective_to: '1970-10-03'}}
     assert_response :internal_server_error
     assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal '1949-10-07', json_response[0]['start']
+    assert_equal '1990-10-03', json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   ######

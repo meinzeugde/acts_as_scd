@@ -8,14 +8,15 @@ class CountriesControllerTest < ActionController::TestCase
   ######
   test "should get all countries today" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o============^========^======'=====^=o
-    # CTA |                         <--'-->    |
-    # CL  |----------------------------'-------|
-    # DEU |----------><--------><------'-------|
-    # LOT |                            '-------|
-    # SCO |                        <---'-------|
-    # GBR |-----------------------><---'-------|
-    # CG  |-----------------------><-><'-------|
+    #     o===========^=========^======'=====^=o
+    # CTA |                            '-----> | [x] Centuria
+    # CL  |----------------------------'-------| [x] Caledonia
+    # DEU |----------><--------><------'-------| [x] Germany
+    # LOF |                            ' <-----| [-] Land formerly founded in the future
+    # LOT |                            '-------| [x] Land formerly founded today
+    # SCO |                        <---'-------| [x] Scotland
+    # GBR |-----------------------><---'-------| [x] United Kingdom
+    # CG  |-----------------------><-><'-------| [x] Volatile Changedonia
     #     o============================'=======o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
@@ -28,12 +29,16 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should get all countries at specific date in the past" do
-    # SOT         1949      1990   Today  2115   EOT
-    #     o=========='=========^=======^=====^=o
-    # CL  |----------'-------------------------|
-    # DEU |----------'<--------><--------------|
-    # GBR |----------'------------><-----------|
-    # CG  |----------'------------><-><--------|
+    # SOT          1950     1990   Today  2115   EOT
+    #     o=========='^=========^======^=====^=o
+    # CTA |          '                 <-----> | [-] Centuria
+    # CL  |----------'-------------------------| [x] Caledonia
+    # DEU |----------'<--------><--------------| [x] Germany
+    # LOF |          '                   <-----| [-] Land formerly founded in the future
+    # LOT |          '                 <-------| [-] Land formerly founded today
+    # SCO |          '             <-----------| [-] Scotland
+    # GBR |----------'------------><-----------| [x] United Kingdom
+    # CG  |----------'------------><-><--------| [x] Volatile Changedonia
     #     o=========='=========================o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
@@ -46,8 +51,23 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should get all countries at specific date in the future" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======^='===^=o
+    # CTA |                            <-'---> | [x] Centuria
+    # CL  |------------------------------'-----| [x] Caledonia
+    # DEU |----------><--------><--------'-----| [x] Germany
+    # LOF |                              '-----| [x] Land formerly founded in the future
+    # LOT |                            <-'-----| [x] Land formerly founded today
+    # SCO |                        <-----'-----| [x] Scotland
+    # GBR |-----------------------><-----'-----| [x] United Kingdom
+    # CG  |-----------------------><-><--'-----| [x] Volatile Changedonia
+    #     o=============================='=====o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :index, {'scd_date' => FUTURE_FORMATTED}
     assert_response :success
+    assert_equal 'CTA,CL,DEU,LOF,LOT,SCO,GBR,CG',
+                 json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
     assert_equal 'Centuria,Eternal Caledonia,Germany,Land formerly founded in the future,Land formerly founded today,Scotland,United Kingdom,Volatile Changedonia',
                  json_response.map{|r|r['name']}.sort.uniq.join(',')
   end
@@ -56,10 +76,10 @@ class CountriesControllerTest < ActionController::TestCase
   ### SHOW
   ######
   test "should get a specific country today" do
-    # SOT         1949      1990   Today  2115   EOT
-    #     o=========='=========^======='=====^=o
-    # DEU |----------'<--------><------'-------|
-    #     o=========='=========================o
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======'=====^=o
+    # DEU |----------><--------><------'-------| [x] Germany
+    #     o============================'=======o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :show, {'id' => 'DEU'}
@@ -72,9 +92,9 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should get specific country in the past" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o==========='========^=======^=====^=o
-    # DEU |-----------'<-------><--------------|
-    #     o==========='========================o
+    #     o=========='^========^=======^=====^=o
+    # DEU |----------'<--------><--------------| [x] Germany
+    #     o=========='=========================o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :show, {'id' => 'DEU', 'scd_date' => '1949-01-01'}
@@ -86,6 +106,12 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should get specific country in the future" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o=========='^========^=======^=====^=o
+    # LOF |                              '-----| [x] Land formerly founded in the future
+    #     o=========='=========================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :show, {'id' => 'LOF', 'scd_date' => FUTURE_FORMATTED}
     assert_response :success
     assert_equal 'Land formerly founded in the future', json_response['name']
@@ -98,6 +124,14 @@ class CountriesControllerTest < ActionController::TestCase
   ### PERIODS
   ######
   test "should get all effective periods of a specific country" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======^=====^=o
+    # DEU |---------->                         |
+    # DEU |           <-------->               |
+    # DEU |                     <--------------|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :effective_periods_by_identity, {'id' => 'DEU'}
     assert_response :success
     assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
@@ -110,7 +144,16 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should get all combined periods of a specific country" do
-    get :effective_periods_by_identity, {'id' => 'DEU'}
+    # todo-matteo: show the difference between effective and combined periods
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^============^=o
+    # DEU |---------->                         |
+    # DEU |           <-------->               |
+    # DEU |                     <--------------|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+    get :combined_periods_by_identity, {'id' => 'DEU'}
     assert_response :success
     assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
     assert_equal '1949-10-07', json_response[0]['end']
@@ -301,6 +344,13 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should split a static country by generating a new period starting in the future" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CL1 |------------------------------------|
+    # CL2 |++++++++++++++++++++++++++++++><++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
     post :create_iteration, id: 'CL', country: {name: 'Caledonia of the future', code: 'CL', effective_from: FUTURE_FORMATTED}
     assert_response :success
     # return the created period
@@ -320,7 +370,14 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should split a static country by generating a new period starting in the past" do
-    # be careful: this may not be suitable in terms of SCD
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CL1 |------------------------------------|
+    # CL2 |++++++++++><++++++++++++++++++++++++|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+    # be careful: this may not be suitable in terms of SCD2
     post :create_iteration, id: 'CL', country: {name: 'Caledonia formerly founded in 1950', code: 'CL', effective_from: '1950-10-05'}
     assert_response :success
     # return the created period
@@ -341,7 +398,7 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should split present period of non-static country which starts in the past by generating a new period starting today" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o============^========^======^=====^=o
+    #     o===========^========^=======^=====^=o
     # DEU1|----------><--------><--------------|
     # DEU2|----------><--------><+++++><+++++++|
     #     o====================================o
@@ -371,7 +428,7 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should split past period of non-static country" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o============^========^======^=====^=o
+    #     o===========^========^=======^=====^=o
     # DEU1|----------><--------><--------------|
     # DEU2|++++><++++><--------><--------------|
     #     o====================================o
@@ -381,7 +438,7 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should split future period of non-static country" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o============^========^======^=====^=o
+    #     o===========^========^=======^=====^=o
     # LOF1|                              <-----|
     # LOF2|                              <-><--|
     #     o====================================o
@@ -391,7 +448,7 @@ class CountriesControllerTest < ActionController::TestCase
 
   test "should not split period of non-static country at start date" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o============^========^======^=====^=o
+    #     o===========^========^=======^=====^=o
     # LOT1|                            <-------|
     # LOT2|                            <x><xxxx|
     #     o====================================o
@@ -454,7 +511,7 @@ class CountriesControllerTest < ActionController::TestCase
   test "should update past period of non-static country" do
     # this will update the past period directly
     # no period splitting
-    # be careful: this may not be suitable in terms of SCD
+    # be careful: this may not be suitable in terms of SCD2
   end
 
   ######
@@ -462,7 +519,7 @@ class CountriesControllerTest < ActionController::TestCase
   ######
   test "should terminate a static country today" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o============^========^======^=====^=o
+    #     o===========^========^=======^=====^=o
     # CL1 |------------------------------------|
     # CL2 |---------------------------->       |
     #     o====================================o
@@ -485,6 +542,13 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should terminate a static country in the future" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CL1 |------------------------------------|
+    # CL2 |------------------------------>     |
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time)
     delete :terminate, id: 'CL', country: {effective_from: FUTURE_FORMATTED}
     assert_response :success
     # return the destroyed period in case of implementing a restore functionality
@@ -502,7 +566,14 @@ class CountriesControllerTest < ActionController::TestCase
   end
 
   test "should terminate a static country in the past" do
-    # be careful: this may not be suitable in terms of SCD
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # CL1 |------------------------------------|
+    # CL2 |---------------->                   |
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time)
+    # be careful: this may not be suitable in terms of SCD2
     delete :terminate, id: 'CL', country: {effective_from: '1965-01-01'}
     assert_response :success
     # return the destroyed period in case of implementing a restore functionality
@@ -522,20 +593,24 @@ class CountriesControllerTest < ActionController::TestCase
   ######
   ### DESTROY
   ######
+  test "should remove static country" do
+    # no period splitting!
+    # be careful: this may not be suitable in terms of SCD2
+  end
+
   test "should remove present period of non-static country" do
     # no period splitting!
-    # be careful: this may not be suitable in terms of SCD
-    next
+    # be careful: this may not be suitable in terms of SCD2
   end
 
   test "should remove future period of non-static country" do
     # no period splitting!
-    # be careful: this may not be suitable in terms of SCD
+    # be careful: this may not be suitable in terms of SCD2
   end
 
   test "should remove past period of non-static country" do
     # no period splitting!
-    # be careful: this may not be suitable in terms of SCD
+    # be careful: this may not be suitable in terms of SCD2
   end
 
 end

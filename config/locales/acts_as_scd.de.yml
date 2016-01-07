@@ -10,3 +10,4 @@ de:
       cannot_create_iteration_at_start_date: 'Kann Zeitraum nicht am Startdatum aufteilen.'
       cannot_create_iteration_at_end_date: 'Kann Zeitraum nicht am Enddatum aufteilen.'
       cannot_create_iteration_that_does_not_exist: 'Kann nicht-existenten Zeitraum nicht aufteilen.'
+      cannot_update_iteration_that_does_not_exist: 'Kein nicht-existenten Zeitraum nicht aktualisieren.'

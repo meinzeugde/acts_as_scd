@@ -409,6 +409,7 @@ class CountriesControllerTest < ActionController::TestCase
     #     o====================================o
     #
     # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+
     # be careful: this may not be suitable in terms of SCD2
     post :create_iteration, id: 'CL', country: {name: 'Caledonia formerly founded in 1950', code: 'CL', effective_from: '1950-10-05'}
     assert_response :success
@@ -466,6 +467,26 @@ class CountriesControllerTest < ActionController::TestCase
     #     o====================================o
     #
     # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+    patch :create_iteration, id: 'DEU', country: {name: 'Germany after the golden age', effective_from: '1930-01-01'}
+    assert_response :success
+    # return the updated period
+    assert_equal 'Germany after the golden age', json_response['name']
+    assert_equal 'DEU', json_response['identity']
+    assert_equal 19300101, json_response['effective_from']
+    assert_equal 19491007, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal '1930-01-01', json_response[0]['end']
+    assert_equal '1930-01-01', json_response[1]['start']
+    assert_equal '1949-10-07', json_response[1]['end']
+    assert_equal '1949-10-07', json_response[2]['start']
+    assert_equal '1990-10-03', json_response[2]['end']
+    assert_equal '1990-10-03', json_response[3]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[3]['end']
+    assert_nil json_response[4]
   end
 
   test "should split future period of non-static country" do
@@ -476,6 +497,25 @@ class CountriesControllerTest < ActionController::TestCase
     #     o====================================o
     #
     # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+    far_future_formatted = 100.days.since.strftime('%Y-%m-%d')
+    far_future = 100.days.since.strftime('%Y%m%d').to_i
+
+    patch :create_iteration, id: 'LOF', country: {name: 'Land of the far future', effective_from: far_future_formatted}
+    assert_response :success
+    # return the updated period
+    assert_equal 'Land of the far future', json_response['name']
+    assert_equal 'LOF', json_response['identity']
+    assert_equal far_future, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOF'}
+    assert_response :success
+    assert_equal FUTURE_FORMATTED, json_response[0]['start']
+    assert_equal far_future_formatted, json_response[0]['end']
+    assert_equal far_future_formatted, json_response[1]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[1]['end']
+    assert_nil json_response[2]
   end
 
   test "should not split period of non-static country at start date" do
@@ -489,6 +529,13 @@ class CountriesControllerTest < ActionController::TestCase
     patch :create_iteration, id: 'LOT', country: {name: 'Mayfly Land', effective_from: TODAY_FORMATTED}
     assert_response :internal_server_error
     assert_equal 'Validation failed: Can not split period at start-date.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOT'}
+    assert_response :success
+    assert_equal TODAY_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should not split period of non-static country at end date" do
@@ -501,9 +548,16 @@ class CountriesControllerTest < ActionController::TestCase
     # (SOT = Start of time / EOT = End of time / x = Rejected Periods)
 
     # attention: the end_date is the value of effective_to decreased by 1
-    patch :create_iteration, id: 'DDR', country: {name: 'DDR', effective_from: "1990-10-02"}
+    patch :create_iteration, id: 'DDR', country: {name: 'Land of the fall of the wall', effective_from: "1990-10-02"}
     assert_response :internal_server_error
     assert_equal 'Validation failed: Can not split period at end-date.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal "1949-10-07", json_response[0]['start']
+    assert_equal "1990-10-03", json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   test "should not split period of non-static country that does not exist" do
@@ -519,22 +573,55 @@ class CountriesControllerTest < ActionController::TestCase
     patch :create_iteration, id: 'DDR', country: {name: 'DDR', effective_from: TODAY_FORMATTED}
     assert_response :internal_server_error
     assert_equal 'Validation failed: Can not split a period that does not exist.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DDR'}
+    assert_response :success
+    assert_equal "1949-10-07", json_response[0]['start']
+    assert_equal "1990-10-03", json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   ######
   ### UPDATE
   ######
-  test "should update static country" do
-
-  end
-
-  test "should update present period of non-static country" do
-    # this will update the present period directly
-    # no period splitting
-    patch :update, id: 'LOT', scd_date: Date.today, country: {name: 'Land of today', area: 100}
+  test "should update static country without changing period" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # CL  |----------------------------'-------| Eternal Caledonia -> New Eternal Caledonia
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+    patch :update, id: 'CL', scd_date: Date.today, country: {name: 'New Eternal Caledonia', area: 100}
     assert_response :success
     # return the updated period
-    assert_equal 'Land of today', json_response['name']
+    assert_equal 'New Eternal Caledonia', json_response['name']
+    assert_equal 'CL', json_response['identity']
+    assert_equal 100, json_response['area']
+    assert_equal START_OF_TIME, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CL'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should update present period of non-static country without changing period" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # LOT |                            '-------| Land of today -> Bigger Land of today
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+
+    # be careful: this may not be suitable in terms of SCD2
+    patch :update, id: 'LOT', scd_date: Date.today, country: {name: 'Bigger Land of today', area: 100}
+    assert_response :success
+    # return the updated period
+    assert_equal 'Bigger Land of today', json_response['name']
     assert_equal 'LOT', json_response['identity']
     assert_equal 100, json_response['area']
     assert_equal TODAY, json_response['effective_from']
@@ -548,17 +635,152 @@ class CountriesControllerTest < ActionController::TestCase
     assert_nil json_response[1]
   end
 
-  test "should update future period of non-static country" do
-    # this will update the future period directly
-    # no period splitting
-    # the only way to create a future period is by plitting a static country
+  test "should update future period of non-static country without changing period" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^='===^=o
+    # LOF |                              '-----| Land of the Future -> Bigger Land of the future
+    #     o=============================='=====o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
 
+    # be careful: this may not be suitable in terms of SCD2
+    patch :update, id: 'LOF', scd_date: FUTURE_FORMATTED, country: {name: 'Bigger Land of the future', area: 100}
+    assert_response :success
+    # return the updated period
+    assert_equal 'Bigger Land of the future', json_response['name']
+    assert_equal 'LOF', json_response['identity']
+    assert_equal 100, json_response['area']
+    assert_equal FUTURE, json_response['effective_from']
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOF'}
+    assert_response :success
+    assert_equal FUTURE_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
   end
 
-  test "should update past period of non-static country" do
-    # this will update the past period directly
-    # no period splitting
+  test "should update past period of non-static country without changing period" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o====='=====^========^=======^=====^=o
+    # DEU |-----'----><--------><--------------| Germany -> Earliest known Germany
+    #     o====='==============================o
+    #
+    # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
+
     # be careful: this may not be suitable in terms of SCD2
+    patch :update, id: 'DEU', scd_date: '1930-01-01', country: {name: 'Earliest known Germany'}
+    assert_response :success
+    # return the updated period
+    assert_equal 'Earliest known Germany', json_response['name']
+    assert_equal 'DEU', json_response['identity']
+    assert_equal 357021, json_response['area']
+    assert_equal START_OF_TIME, json_response['effective_from']
+    assert_equal 19491007, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal '1949-10-07', json_response[0]['end']
+    assert_equal '1949-10-07', json_response[1]['start']
+    assert_equal '1990-10-03', json_response[1]['end']
+    assert_equal '1990-10-03', json_response[2]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[2]['end']
+    assert_nil json_response[3]
+  end
+
+  test "should not update period of non-static country at a date on which no period exists" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # LOF |                            ' <-----| Land of the Future
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+
+    # be careful: this may not be suitable in terms of SCD2
+    patch :update, id: 'LOF', scd_date: Date.today, country: {name: 'Bigger Land of the future', area: 100}
+    assert_response :internal_server_error
+    assert_equal 'Can not update a period that does not exist.', json_response['error']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'LOF'}
+    assert_response :success
+    assert_equal FUTURE_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should not update the period's identity of static country by ignoring the change" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # CL  |----------------------------'-------| Eternal Caledonia
+    # ECL |xxxxxxxxxxxxxxxxxxxxxxxxxxxx'xxxxxxx| Eternal Caledonia with identity 'ECL'
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Ignored Period)
+
+    # todo-matteo:  consider implementing update of identity
+    #               that would inherit that you have to check if the period does not interfere with an existing period of the new identity
+    patch :update, id: 'CL', scd_date: Date.today, country: {name: 'New Eternal Caledonia', identity: 'ECL'}
+    assert_response :success
+    assert_equal 'CL', json_response['identity']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CL'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
+
+    get :effective_periods_by_identity, {'id' => 'ECL'}
+    assert_response :success
+    assert_nil json_response[0]
+  end
+
+  test "should not update the period's start-date of static country by ignoring the change" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # CL1 |----------------------------'-------| Eternal Caledonia
+    # CL2 |           <xxxxxxxxxxxxxxxx'xxxxxxx| Eternal Caledonia
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Ignored Period)
+
+    # todo-matteo: consider implementing update of start-date by extending the method 'terminate'
+    patch :update, id: 'CL', scd_date: Date.today, country: {name: 'New Eternal Caledonia', effective_from: '1950-01-01'}
+    assert_response :success
+    assert_equal START_OF_TIME, json_response['effective_from']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CL'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
+  end
+
+  test "should not update the period's end-date of static country by ignoring the change" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^======='=====^=o
+    # CL1 |----------------------------'-------| Eternal Caledonia
+    # CL2 |xxxxxxxxxxxxxxxxxxxxxxxxxxxx>       | Eternal Caledonia
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Ignored Period)
+
+    # advice: use the terminate method for this purpose
+    patch :update, id: 'CL', scd_date: Date.today, country: {name: 'New Eternal Caledonia', effective_to: '1950-01-01'}
+    assert_response :success
+    assert_equal END_OF_TIME, json_response['effective_to']
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'CL'}
+    assert_response :success
+    assert_equal START_OF_TIME_FORMATTED, json_response[0]['start']
+    assert_equal END_OF_TIME_FORMATTED, json_response[0]['end']
+    assert_nil json_response[1]
   end
 
   ######
@@ -620,6 +842,7 @@ class CountriesControllerTest < ActionController::TestCase
     #     o====================================o
     #
     # (SOT = Start of time / EOT = End of time)
+
     # be careful: this may not be suitable in terms of SCD2
     delete :terminate, id: 'CL', country: {effective_from: '1965-01-01'}
     assert_response :success

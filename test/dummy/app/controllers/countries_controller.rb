@@ -35,8 +35,11 @@ class CountriesController < ApplicationController
     end
   end
 
+  # basically this method could also work by primary_key,
+  #   this seems more consistent in terms of handing the identity instead of primary_id
   def update
     begin
+      # todo-matteo: check what happens when the identity, effective_from and effective_to is not mapped out of the params
       country = Country.update_iteration!(params[:id],map_countries_params,map_scd_date)
 
       render :json => country

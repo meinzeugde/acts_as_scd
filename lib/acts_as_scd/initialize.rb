@@ -103,7 +103,7 @@ module ActsAsScd
 
     model.before_create ->{
       if(self.unlimited? && model.has_identity?(self.identity))
-        errors.add(:base, I18n.t('scd.errors.cannot_create_identity_period_overlap',{:identity=>self.identity}))
+        errors.add(:base, I18n.t('scd.errors.cannot_create_identity_period_overlap'))
         return false
       elsif(!self.unlimited?)
         # check period using the start date
@@ -111,7 +111,7 @@ module ActsAsScd
         if record
           self_period = ActsAsScd::Period[self.effective_from,self.effective_to]
           record_period = ActsAsScd::Period[record.effective_from,record.effective_to]
-          errors.add(:base, I18n.t('scd.errors.cannot_create_identity_period_overlap',{:identity=>self.identity,:period=>self_period})) if(self_period.overlap?(record_period))
+          errors.add(:base, I18n.t('scd.errors.cannot_create_identity_period_overlap')) if(self_period.overlap?(record_period))
           return false
         end
         # check period using the end date
@@ -119,7 +119,7 @@ module ActsAsScd
         if record
           self_period = ActsAsScd::Period[self.effective_from,self.effective_to]
           record_period = ActsAsScd::Period[record.effective_from,record.effective_to]
-          errors.add(:base, I18n.t('scd.errors.cannot_create_identity_period_overlap',{:identity=>self.identity,:period=>self_period})) if(self_period.overlap?(record_period))
+          errors.add(:base, I18n.t('scd.errors.cannot_create_identity_period_overlap')) if(self_period.overlap?(record_period))
           return false
         end
       end
@@ -129,15 +129,15 @@ module ActsAsScd
       record = model.find_by_identity_at(self.identity,self.effective_from)
       if record
         if(record.past_limited? && self.effective_from == record.effective_from)
-          errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_at_start_date',{:identity=>self.identity}))
+          errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_at_start_date'))
           return false
         end
         if(record.future_limited? && self.effective_from == (record.effective_to - 1))
-          errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_at_end_date',{:identity=>self.identity}))
+          errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_at_end_date'))
           return false
         end
       else
-        errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_that_does_not_exist',{:identity=>self.identity}))
+        errors.add(:base, I18n.t('scd.errors.cannot_create_iteration_that_does_not_exist'))
         return false
       end
     }, :if => :acts_as_scd_create_iteration

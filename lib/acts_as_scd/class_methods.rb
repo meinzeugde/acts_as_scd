@@ -165,13 +165,13 @@ module ActsAsScd
         current_record = find_by_identity_at(identity,date)
         attributes = {IDENTITY_COLUMN=>identity}.with_indifferent_access
         if current_record
-          non_replicated_attrs = %w[id effective_from effective_to updated_at created_at]
+          # todo-matteo: replace clear names with constants
+          non_replicated_attrs = %w[id effective_from updated_at created_at]
           attributes = attributes.merge current_record.attributes.with_indifferent_access.except(*non_replicated_attrs)
         end
         attributes = attributes.merge(START_COLUMN=>date).merge(attribute_changes.with_indifferent_access.except(START_COLUMN, END_COLUMN))
         new_record = create(attributes.merge(:acts_as_scd_create_iteration => true))
         if new_record.errors.blank? && current_record
-          # current_record.update_attributes END_COLUMN=>start
           current_record.send :"#{END_COLUMN}=", date
           current_record.save validate: false
         end
@@ -195,7 +195,7 @@ module ActsAsScd
         if current_record
           current_record.send :update_attributes, attribute_changes
         end
-        current_record
+        return (current_record.nil? ? false : current_record)
       end
     end
 
@@ -203,7 +203,7 @@ module ActsAsScd
     def update_iteration!(identity, attribute_changes, date=nil)
       begin
         record = update_iteration(identity, attribute_changes, date)
-        raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        raise I18n.t('scd.errors.cannot_update_iteration_that_does_not_exist') unless record
         record
       end
     end

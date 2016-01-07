@@ -6,7 +6,7 @@ en:
       between: '-'
       always: '-'
     errors:
-      identity_exists: 'An entry for the identity %{identity} already exists.'
+      cannot_create_identity_period_overlap: 'The period would interfere with an existing period.'
       cannot_create_iteration_at_start_date: 'Can not split period at start-date.'
       cannot_create_iteration_at_end_date: 'Can not split period at end-date.'
-      periods_overlap: 'The period %{period} for the identity %{identity} would overlap an existing period.'
+      cannot_create_iteration_that_does_not_exist: 'Can not split a period that does not exist.'

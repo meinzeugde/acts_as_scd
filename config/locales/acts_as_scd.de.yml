@@ -6,7 +6,7 @@ de:
       between: '-'
       always: '-'
     errors:
-      identity_exists: 'Es existiert bereits ein Eintrag für die Identität %{identity}.'
-      cannot_create_iteration_at_start_date: 'Kann Zeiträume nicht am Startdatum aufteilen.'
-      cannot_create_iteration_at_end_date: 'Kann Zeiträume nicht am Enddatum aufteilen.'
-      periods_overlap: 'Der Zeitraum %{period} für die Identität %{identity} überschneidet sich mit einem vorhandenen Zeitraum.'
+      cannot_create_identity_period_overlap: 'Der Zeitraum überschneidet sich mit einem vorhandenen Zeitraum.'
+      cannot_create_iteration_at_start_date: 'Kann Zeitraum nicht am Startdatum aufteilen.'
+      cannot_create_iteration_at_end_date: 'Kann Zeitraum nicht am Enddatum aufteilen.'
+      cannot_create_iteration_that_does_not_exist: 'Kann nicht-existenten Zeitraum nicht aufteilen.'

@@ -1,7 +1,4 @@
 class Country < ActiveRecord::Base
-  ### VALIDATIONS
-  validates :code, :presence => true
-
   ### ACTS_AS_SCD
   # Attention: be sure to put before associations,
   #   otherwise: `method_missing': undefined method `has_many_iterations_through_identity'

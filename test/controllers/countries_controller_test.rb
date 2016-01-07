@@ -272,7 +272,7 @@ class CountriesControllerTest < ActionController::TestCase
     # (SOT = Start of time / EOT = End of time / x = Rejected Period)
     post :create, {country: {name: 'Eternal Caledonia', code: 'CL'}}
     assert_response :internal_server_error
-    assert_equal 'Validation failed: An entry for the identity CL already exists.', json_response['error']
+    assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
   end
 
   test "should not create a static country which already exists as non-static country" do
@@ -285,7 +285,7 @@ class CountriesControllerTest < ActionController::TestCase
     # (SOT = Start of time / EOT = End of time / x = Rejected Period)
     post :create, {country: {name: 'Eternal East Germany', code: 'DDR'}}
     assert_response :internal_server_error
-    assert_equal 'Validation failed: An entry for the identity DDR already exists.', json_response['error']
+    assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
   end
 
   test "should not create a new period for a non-static country which interferes with existing period before end" do
@@ -298,7 +298,7 @@ class CountriesControllerTest < ActionController::TestCase
     # (SOT = Start of time / EOT = End of time / x = Rejected Period)
     post :create, {country: {name: 'Earlier East Germany', code: 'DDR', effective_from: '1970-10-03'}}
     assert_response :internal_server_error
-    assert_equal 'Validation failed: The period since 1970-10-03 for the identity DDR would overlap an existing period.', json_response['error']
+    assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
   end
 
   test "should not create a new period for a non-static country which interferes with existing period before start" do
@@ -311,7 +311,7 @@ class CountriesControllerTest < ActionController::TestCase
     # (SOT = Start of time / EOT = End of time / x = Rejected Period)
     post :create, {country: {name: 'Earliest East Germany', code: 'DDR', effective_to: '1970-10-03'}}
     assert_response :internal_server_error
-    assert_equal 'Validation failed: The period to 1970-10-03 for the identity DDR would overlap an existing period.', json_response['error']
+    assert_equal 'Validation failed: The period would interfere with an existing period.', json_response['error']
   end
 
   ######
@@ -440,7 +440,7 @@ class CountriesControllerTest < ActionController::TestCase
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^========^=======^=====^=o
     # LOF1|                              <-----|
-    # LOF2|                              <-><--|
+    # LOF2|                              <+><++|
     #     o====================================o
     #
     # (SOT = Start of time / EOT = End of time / + = Splitted Periods)
@@ -472,6 +472,21 @@ class CountriesControllerTest < ActionController::TestCase
     patch :create_iteration, id: 'DDR', country: {name: 'DDR', effective_from: "1990-10-02"}
     assert_response :internal_server_error
     assert_equal 'Validation failed: Can not split period at end-date.', json_response['error']
+  end
+
+  test "should not split period of non-static country that does not exist" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^========^=======^=====^=o
+    # DDR1|           <-------->               |
+    # DDR2|                            <xxxxxxx|
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / x = Rejected Periods)
+
+    # advice: use create method if this case occurs
+    patch :create_iteration, id: 'DDR', country: {name: 'DDR', effective_from: TODAY_FORMATTED}
+    assert_response :internal_server_error
+    assert_equal 'Validation failed: Can not split a period that does not exist.', json_response['error']
   end
 
   ######

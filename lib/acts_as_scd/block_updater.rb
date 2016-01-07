@@ -55,7 +55,7 @@ module ActsAsScd
       @scope = options.delete :scope
       # @extend_from = options[:extend_from]
       # @unterminate = options[:unterminate]
-      @iteration_options = options.dup
+      # @iteration_options = options.dup
     end
 
     attr_reader :model, :fecha, :counters, :new_items, :old_items, :missing_items
@@ -80,13 +80,15 @@ module ActsAsScd
         @pre_items = scoped_model.current.count
         scoped_model.current.update_all(:effective_to=>model.effective_date(fecha))
         # @unterminate = true
-        @iteration_options[:unterminate] = true
+        # @iteration_options[:unterminate] = true
       end
       self
     end
 
     def add(identity, attributes={})
-      record = model.create_iteration(identity, attributes, fecha, @iteration_options)
+      # todo-matteo: needs to be refactored since 'create_iteration' has changed
+      # record = model.create_iteration(identity, attributes, fecha, @iteration_options)
+      record = model.create_iteration(identity, attributes, fecha)
       yield record if block_given?
       raise "Errors: #{record.errors.full_messages}" if @raise_on_error && record.errors.present?
       if record.antecessor

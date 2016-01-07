@@ -156,30 +156,23 @@ module ActsAsScd
       end
     end
 
-    # Create a new iteration
-    # options
-    # :unterminate - if the identity exists and is terminated, unterminate it (extending the last iteration to the new date)
-    # :extend_from - if no prior iteration exists, extend effective_from to the start-of-time
-    # (TODO: consider making :extend_from the default, adding an option for the opposite...)
-    def create_iteration(identity, attribute_changes, start=nil, options={})
-      start = effective_date(start || Date.today)
+    # Splits an existing period at the given date
+    # It is not possible to split a period at the start- or end-date
+    # (This behaviour is implemented via validation method "before_create" in initialize.rb)
+    def create_iteration(identity, attribute_changes, date=nil)
+      date = effective_date(date || Date.today)
       transaction do
-        current_record = find_by_identity_at(identity,start)
-        if !current_record && options[:unterminate]
-          current_record = latest_of(identity) # terminated.where(IDENTITY_COLUMN=>identity).first
-          #   where(IDENTITY_COLUMN=>identity).where("#{effective_to_column_sql} < #{END_OF_TIME}").reorder("#{effective_to_column_sql} desc").limit(1).first
-        end
+        current_record = find_by_identity_at(identity,date)
         attributes = {IDENTITY_COLUMN=>identity}.with_indifferent_access
         if current_record
           non_replicated_attrs = %w[id effective_from effective_to updated_at created_at]
           attributes = attributes.merge current_record.attributes.with_indifferent_access.except(*non_replicated_attrs)
         end
-        start = START_OF_TIME if options[:extend_from] && !identity_exists?(identity)
-        attributes = attributes.merge(START_COLUMN=>start).merge(attribute_changes.with_indifferent_access.except(START_COLUMN, END_COLUMN))
+        attributes = attributes.merge(START_COLUMN=>date).merge(attribute_changes.with_indifferent_access.except(START_COLUMN, END_COLUMN))
         new_record = create(attributes.merge(:acts_as_scd_create_iteration => true))
         if new_record.errors.blank? && current_record
           # current_record.update_attributes END_COLUMN=>start
-          current_record.send :"#{END_COLUMN}=", start
+          current_record.send :"#{END_COLUMN}=", date
           current_record.save validate: false
         end
         new_record
@@ -187,9 +180,9 @@ module ActsAsScd
     end
 
     # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
-    def create_iteration!(identity, attribute_changes, start=nil, options={})
+    def create_iteration!(identity, attribute_changes, date=nil)
       begin
-        record = create_iteration(identity, attribute_changes, start, options)
+        record = create_iteration(identity, attribute_changes, date)
         raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
         record
       end

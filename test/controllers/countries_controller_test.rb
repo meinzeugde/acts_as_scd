@@ -983,7 +983,7 @@ class CountriesControllerTest < ActionController::TestCase
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^========^======='=====^=o
     # CL  |----------------------------'-------| Eternal Caledonia
-    #     |                            '       | [Idenity Removed]
+    #     |                            '       | [Identity Removed]
     #     o============================'=======o
     #
     # (SOT = Start of time / EOT = End of time /  ' = Selected Date)
@@ -1033,7 +1033,7 @@ class CountriesControllerTest < ActionController::TestCase
     # SOT          1950     1990   Today  2115   EOT
     #     o===========^========^======='=====^=o
     # LOF |                            ' <-----| Land of the Future
-    #     |                                    | [Idenity Removed]
+    #     |                                    | [Identity Removed]
     #     o============================'=======o
     #
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
@@ -1096,5 +1096,41 @@ class CountriesControllerTest < ActionController::TestCase
     assert_equal "1949-10-07", json_response[0]['start']
     assert_equal "1990-10-03", json_response[0]['end']
     assert_nil json_response[1]
+  end
+
+  ######
+  ### DESTROY IDENTITY
+  ######
+  test "should completely remove all periods of an identity" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======'=====^=o
+    # DEU1|----------><--------><------'-------|
+    # DEU2|                                    |
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time)
+
+    # be careful: this may not be suitable in terms of SCD2
+    delete :destroy, id: 'DEU'
+    assert_response :success
+    # returns the destroyed periods
+    assert_equal 3, json_response.size
+
+    # check all periods
+    get :effective_periods_by_identity, {'id' => 'DEU'}
+    assert_response :success
+    assert_nil json_response[0]
+  end
+
+  test "should not remove identity that does not exist" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======'=====^=o
+    # XXX |                                    |
+    #     o============================'=======o
+    #
+    # (SOT = Start of time / EOT = End of time)
+    delete :destroy, id: 'XXX'
+    assert_response :internal_server_error
+    assert_equal 'Can not delete an identity that does not exist (nor any existing associations).', json_response['error']
   end
 end

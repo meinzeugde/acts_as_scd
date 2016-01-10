@@ -73,12 +73,9 @@ class CountriesController < ApplicationController
 
   def destroy
     begin
-      # todo-matteo: implement a method which destroys the whole identity (all records) and all associations
-      # http://stackoverflow.com/a/22757533
+      destroyed_countries = Country.destroy_identity!(params[:id])
 
-      # destroyed_country = Country.destroy_identity!(params[:id])
-
-      # render :json => destroyed_country
+      render :json => destroyed_countries
     rescue Exception => e
       render :json => {:error => e.message}, :status => :internal_server_error
     end

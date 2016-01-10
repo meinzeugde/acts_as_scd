@@ -16,3 +16,5 @@ en:
       cannot_terminate_iteration_at_end_date: 'Can not terminate period at end-date.'
       cannot_destroy_iteration_that_does_not_exist: 'Can not delete a period that does not exist (nor any existing associations).'
       cannot_delete_iteration_that_does_not_exist: 'Can not delete a period that does not exist.'
+      cannot_destroy_identity_that_does_not_exist: 'Can not delete an identity that does not exist (nor any existing associations).'
+      cannot_delete_identity_that_does_not_exist: 'Can not delete an identity that does not exist.'

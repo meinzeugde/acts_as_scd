@@ -92,6 +92,20 @@ module ActsAsScd
       Period.date(d)
     end
 
+    #returns Array (may be emtpy)
+    def find_all_by_identity(identity)
+      all_of(identity).to_a
+    end
+
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
+    def find_all_by_identity!(identity)
+      begin
+        result = find_all_by_identity(identity)
+        raise ActiveRecord::RecordNotFound if result.emtpy?
+        result
+      end
+    end
+
     #returns nil if nothing is found
     def find_by_identity_at(identity, date)
       at_date(date).where(IDENTITY_COLUMN=>identity).first
@@ -262,6 +276,32 @@ module ActsAsScd
         raise I18n.t('scd.errors.cannot_destroy_iteration_that_does_not_exist') unless record
         raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
         record
+      end
+    end
+
+    # returns an array of all destroyed records or false
+    def destroy_identity(identity)
+      destroyed_periods = []
+      transaction do
+        find_all_by_identity(identity).each do |current_record|
+          destroyed_periods.push(current_record.send(:destroy))
+        end
+
+        return (destroyed_periods.empty? ? false : destroyed_periods)
+      end
+    end
+
+    # returns exception if model could not be destroyed
+    # returns exception (ActiveRecord::RecordInvalid) if validation of model fails
+    def destroy_identity!(identity)
+      begin
+        records = destroy_identity(identity)
+        raise I18n.t('scd.errors.cannot_destroy_identity_that_does_not_exist') unless records
+        records.each do |record|
+          raise ActiveRecord::RecordInvalid.new(record) if record.errors.any?
+        end
+
+        records
       end
     end
 

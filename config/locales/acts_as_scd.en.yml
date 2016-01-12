@@ -6,6 +6,7 @@ en:
       between: '-'
       always: '-'
     errors:
+      cannot_find_iterations: 'Could not find any periods.'
       cannot_create_identity_period_overlap: 'The period would interfere with an existing period.'
       cannot_create_iteration_at_start_date: 'Can not split period at start-date.'
       cannot_create_iteration_at_end_date: 'Can not split period at end-date.'

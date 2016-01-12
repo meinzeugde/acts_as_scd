@@ -6,6 +6,7 @@ de:
       between: '-'
       always: '-'
     errors:
+      cannot_find_iterations: 'Kein Zeitraum gefunden.'
       cannot_create_identity_period_overlap: 'Der Zeitraum überschneidet sich mit einem vorhandenen Zeitraum.'
       cannot_create_iteration_at_start_date: 'Kann Zeitraum nicht am Startdatum aufteilen.'
       cannot_create_iteration_at_end_date: 'Kann Zeitraum nicht am Enddatum aufteilen.'

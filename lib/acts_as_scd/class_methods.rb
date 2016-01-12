@@ -51,7 +51,7 @@ module ActsAsScd
     def at_present!
       begin
         result = at_present
-        raise ActiveRecord::RecordNotFound if result.to_a.empty?
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.to_a.empty?
         result
       end
     end
@@ -68,7 +68,7 @@ module ActsAsScd
     def at_present_or!(date=nil)
       begin
         result = at_present_or(date)
-        raise ActiveRecord::RecordNotFound if result.to_a.empty?
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.to_a.empty?
         result
       end
     end
@@ -101,7 +101,7 @@ module ActsAsScd
     def find_all_by_identity!(identity)
       begin
         result = find_all_by_identity(identity)
-        raise ActiveRecord::RecordNotFound if result.empty?
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.empty?
         result
       end
     end
@@ -115,7 +115,7 @@ module ActsAsScd
     def find_by_identity_at!(identity, date)
       begin
         result = find_by_identity_at(identity, date)
-        raise ActiveRecord::RecordNotFound if result.nil?
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.nil?
         result
       end
     end
@@ -129,7 +129,7 @@ module ActsAsScd
     def find_by_identity_at_present!(identity)
       begin
         result = find_by_identity_at_present(identity)
-        raise ActiveRecord::RecordNotFound if result.nil?
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.nil?
         result
       end
     end
@@ -147,7 +147,7 @@ module ActsAsScd
     def find_by_identity_at_present_or!(identity,date=nil)
       begin
         result = find_by_identity_at_present_or(identity,date)
-        raise ActiveRecord::RecordNotFound if result.nil?
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.nil?
         result
       end
     end

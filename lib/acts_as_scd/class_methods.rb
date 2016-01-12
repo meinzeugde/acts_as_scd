@@ -101,7 +101,7 @@ module ActsAsScd
     def find_all_by_identity!(identity)
       begin
         result = find_all_by_identity(identity)
-        raise ActiveRecord::RecordNotFound if result.emtpy?
+        raise ActiveRecord::RecordNotFound if result.empty?
         result
       end
     end

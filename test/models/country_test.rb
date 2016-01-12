@@ -5,6 +5,9 @@ class ActsAsScdTest < ActiveSupport::TestCase
   fixtures :all
 
   test "find_all_by_identity" do
+    #################
+    ### FIND ANYTHING
+    #################
     # should return an Array
     assert_kind_of Array, Country.find_all_by_identity('DEU')
 
@@ -15,18 +18,26 @@ class ActsAsScdTest < ActiveSupport::TestCase
                      countries(:de3)  # DEU
                  ], Country.find_all_by_identity('DEU')
 
+    # bang-version of method should behave the same
+    assert_kind_of Array, Country.find_all_by_identity!('DEU')
+    assert_equal Country.find_all_by_identity('DEU'), Country.find_all_by_identity!('DEU')
+
+    #################
+    ### FIND NOTHING
+    #################
     # should return an empty array
     assert_equal [], Country.find_all_by_identity('XXX')
-  end
 
-  test "find_all_by_identity!" do
-    # should return an Exception
+    # bang-version should return an Exception
     assert_raises_with_message ActiveRecord::RecordNotFound, 'Could not find any periods.' do
       Country.find_all_by_identity!('XXX')
     end
   end
 
   test "at_present" do
+    #################
+    ### FIND ANYTHING
+    #################
     # should return an ActiveRecord::Relation
     assert_kind_of ActiveRecord::Relation, Country.at_present
 
@@ -45,20 +56,25 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal countries(:de3), Country.at_present.where(identity: 'DEU').first
     assert_equal countries(:de3), Country.where(identity: 'DEU').at_present.first
 
+    # bang-version of method should behave the same
+    assert_kind_of ActiveRecord::Relation, Country.at_present!
+    assert_equal Country.at_present.order(:identity).to_a, Country.at_present!.order(:identity).to_a
+    assert_equal Country.at_present.where(identity: 'DEU').first, Country.at_present!.where(identity: 'DEU').first
+    assert_equal Country.where(identity: 'DEU').at_present.first, Country.where(identity: 'DEU').at_present!.first
+
+    #################
+    ### FIND NOTHING
+    #################
     # should return an ActiveRecord::Relation
     assert_kind_of ActiveRecord::Relation, Country.where(identity: 'XXX').at_present
     assert_kind_of ActiveRecord::Relation, Country.at_present.where(identity: 'XXX')
-  end
 
-  test "at_present!" do
-    # should return an Exception
+    # bang-version should return an Exception
     assert_raises_with_message ActiveRecord::RecordNotFound, 'Could not find any periods.' do
-      Country.where(identity: 'XXX').at_present
+      Country.where(identity: 'XXX').at_present!
     end
-
-    # should return an Exception
     assert_raises_with_message ActiveRecord::RecordNotFound, 'Could not find any periods.' do
-      Country.at_present.where(identity: 'XXX')
+      Country.at_present!.where(identity: 'XXX')
     end
   end
 

@@ -184,6 +184,11 @@ module ActsAsScd
           attributes = attributes.merge current_record.attributes.with_indifferent_access.except(*non_replicated_attrs)
         end
         attributes = attributes.merge(START_COLUMN=>date).merge(attribute_changes.with_indifferent_access.except(START_COLUMN, END_COLUMN))
+        # @Attention: on rails 3.2.15 the following error is raised:
+        #   "Can't mass-assign protected attributes: acts_as_scd_create_iteration"
+        # @Workaround: add the following line to your affected model:
+        #   attr_accessible :acts_as_scd_create_iteration # @workaround for scd models
+        # todo-matteo: refactor, find a way without the additional attribute to initiate a different "before_create" validation
         new_record = create(attributes.merge(:acts_as_scd_create_iteration => true))
         if new_record.errors.blank? && current_record
           current_record.send :"#{END_COLUMN}=", date

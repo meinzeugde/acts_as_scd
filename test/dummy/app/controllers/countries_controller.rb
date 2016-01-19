@@ -17,6 +17,14 @@ class CountriesController < ApplicationController
     end
   end
 
+  def upcoming
+    begin
+      render json: Country.upcoming!
+    rescue Exception => e
+      render :json => {:error => e.message}, :status => :internal_server_error
+    end
+  end
+
   def show
     begin
       render json: Country.find_by_identity_at_present_or!(params[:id],map_scd_date)

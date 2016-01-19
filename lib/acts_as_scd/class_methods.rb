@@ -73,6 +73,21 @@ module ActsAsScd
       end
     end
 
+    def after_present
+      after_date(Date.today)
+    end
+    alias_method :upcoming, :after_present
+
+
+    def after_present!
+      begin
+        result = after_present
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.to_a.empty?
+        result
+      end
+    end
+    alias_method :upcoming!, :after_present!
+
     def identity_column_sql(table_alias=nil)
       # %{#{ActiveRecord::Base.connection.quote_table_name(table_alias || table_name)}.#{ActiveRecord::Base.connection.quote_column_name(IDENTITY_COLUMN)}}
       %{#{connection.quote_table_name(table_alias || table_name)}.#{connection.quote_column_name(IDENTITY_COLUMN)}}

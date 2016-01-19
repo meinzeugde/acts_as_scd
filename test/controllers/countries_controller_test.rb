@@ -75,6 +75,29 @@ class CountriesControllerTest < ActionController::TestCase
                  json_response.map{|r|r['name']}.sort.uniq.join(',')
   end
 
+  test "should get all upcoming countries" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======^=====^=o
+    # CTA |                            <-----> | [-] Centuria
+    # CL  |------------------------------------| [-] Eternal Caledonia
+    # DDR |           <-------->               | [-] East Germany
+    # DEU |----------><--------><--------------| [-] Germany
+    # LOF |                              <-----| [x] Land formerly founded in the future
+    # LOT |                            <-------| [-] Land formerly founded today
+    # SCO |                        <-----------| [-] Scotland
+    # GBR |-----------------------><-----------| [-] United Kingdom
+    # CG  |-----------------------><-><--------| [-] Volatile Changedonia
+    #     o====================================o
+    #
+    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+    get :upcoming
+    assert_response :success
+    assert_equal 'LOF',
+                 json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
+    assert_equal 'Land formerly founded in the future',
+                 json_response.map{|r|r['name']}.sort.uniq.join(',')
+  end
+
   ######
   ### SHOW
   ######

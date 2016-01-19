@@ -78,4 +78,28 @@ class ActsAsScdTest < ActiveSupport::TestCase
     end
   end
 
+  test "after_date" do
+    #################
+    ### FIND ANYTHING
+    #################
+    # should return an ActiveRecord::Relation
+    assert_kind_of ActiveRecord::Relation, Country.after_date(Date.today)
+
+    # should find the future periods of all countries
+    assert_equal [
+                     countries(:landin10days), # LOF
+                 ], Country.after_date(Date.today).order(:identity).to_a
+
+    # should find the future period of a specific country
+    assert_equal countries(:landin10days), Country.after_date(Date.today).where(identity: 'LOF').first
+    assert_equal countries(:landin10days), Country.where(identity: 'LOF').after_date(Date.today).first
+
+    #################
+    ### FIND NOTHING
+    #################
+    # should return an ActiveRecord::Relation
+    assert_kind_of ActiveRecord::Relation, Country.where(identity: 'DEU').after_date(Date.today)
+    assert_kind_of ActiveRecord::Relation, Country.after_date(Date.today).where(identity: 'DEU')
+  end
+
 end

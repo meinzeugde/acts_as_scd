@@ -14,6 +14,10 @@ module ActsAsScd
     self.class.find_by_identity_at(identity, date)
   end
 
+  def after_date(date)
+    self.class.find_by_identity_after(identity, date)
+  end
+
   def at_present
     self.class.find_by_identity_at_present
   end

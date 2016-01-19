@@ -26,6 +26,10 @@ module ActsAsScd
     model.scope :at_date, ->(date){
         model.where(%{#{model.effective_from_column_sql}<=:date AND #{model.effective_to_column_sql}>:date}, :date=>model.effective_date(date))
     }
+    # Iterations effective after given date
+    model.scope :after_date, ->(date){
+      model.where(%{#{model.effective_from_column_sql}>:date AND #{model.effective_to_column_sql}>:date}, :date=>model.effective_date(date))
+    }
     # Iterations superseded/terminated
     model.scope :ended, ->{model.where("#{model.effective_to_column_sql} < :date", :date=>END_OF_TIME)}
     model.scope :earliest, ->(identity=nil){

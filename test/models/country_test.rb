@@ -78,6 +78,35 @@ class ActsAsScdTest < ActiveSupport::TestCase
     end
   end
 
+  test "class-method: before_date" do
+    #################
+    ### FIND ANYTHING
+    #################
+    # should return an ActiveRecord::Relation
+    assert_kind_of ActiveRecord::Relation, Country.before_date(Date.today)
+
+    # should find the past periods of all countries
+    assert_equal [
+                     countries(:de1),                 # DEU
+                     countries(:changedonia_first),   # CG
+                     countries(:uk1),                 # GBR
+                     countries(:ddr),                 # DDR
+                     countries(:de2),                 # DEU
+                     countries(:changedonia_second),  # CG
+                 ], Country.before_date(Date.today).order(:effective_from).to_a
+
+    # should find the past period of a specific country
+    assert_equal countries(:uk1), Country.before_date(Date.today).where(identity: 'GBR').first
+    assert_equal countries(:uk1), Country.where(identity: 'GBR').before_date(Date.today).first
+
+    #################
+    ### FIND NOTHING
+    #################
+    # should return an ActiveRecord::Relation
+    assert_kind_of ActiveRecord::Relation, Country.where(identity: 'SCO').before_date(Date.today)
+    assert_kind_of ActiveRecord::Relation, Country.before_date(Date.today).where(identity: 'SCO')
+  end
+
   test "class-method: after_date" do
     #################
     ### FIND ANYTHING

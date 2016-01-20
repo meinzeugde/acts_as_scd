@@ -83,6 +83,11 @@ module ActsAsScd
         end
       end
 
+      # children before today
+      define_method :"#{assoc}_past" do
+        send(:"#{assoc}_iterations").before_date(Date.today)
+      end
+
       # children after today
       define_method :"#{assoc}_upcoming" do
         send(:"#{assoc}_iterations").after_date(Date.today)

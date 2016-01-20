@@ -93,21 +93,44 @@ class CountriesControllerTest < ActionController::TestCase
                  json_response.map{|r|r['name']}.sort.uniq.join(',')
   end
 
-  test "should get all upcoming countries" do
+  test "should get all countries terminated in the past" do
     # SOT          1950     1990   Today  2115   EOT
-    #     o===========^=========^======^=====^=o
-    # CTA |                            <-----> | [-] Centuria
-    # CL  |------------------------------------| [-] Eternal Caledonia
-    # DDR |           <-------->               | [-] East Germany
-    # DEU |----------><--------><--------------| [-] Germany
-    # LOF |                              <-----| [x] Land formerly founded in the future
-    # LOT |                            <-------| [-] Land formerly founded today
-    # SCO |                        <-----------| [-] Scotland
-    # GBR |-----------------------><-----------| [-] United Kingdom
-    # CG  |-----------------------><-><--------| [-] Volatile Changedonia
-    #     o====================================o
+    #     o'==========^=========^====='^=====^=o
+    # CTA |'                          '<-----> | [-] Centuria
+    # CL  |'--------------------------'--------| [-] Eternal Caledonia
+    # DDR |'          <-------->      '        | [x] East Germany
+    # DEU |'---------><--------><-----'--------| [x] Germany (Period 1/2)
+    # LOF |'                          '  <-----| [-] Land formerly founded in the future
+    # LOT |'                          '<-------| [-] Land formerly founded today
+    # SCO |'                       <--'--------| [-] Scotland
+    # GBR |'----------------------><--'--------| [x] United Kingdom (Period 1)
+    # CG  |'----------------------><->'--------| [x] Volatile Changedonia (Period 1/2)
+    #     o'=========================='========o
     #
-    # (SOT = Start of time / EOT = End of time / ' = Selected Date)
+    # (SOT = Start of time / EOT = End of time / ' ' = Selected Timespan)
+    get :past
+    assert_response :success
+    assert_equal 'DDR,DEU,GBR,CG',
+                 json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
+    assert_equal 'East Germany,Germany,United Kingdom,Volatile Changedonia',
+                 json_response.map{|r|r['name']}.sort.uniq.join(',')
+  end
+
+  test "should get all countries starting in the future" do
+    # SOT          1950     1990   Today  2115   EOT
+    #     o===========^=========^======^'====^'o
+    # CTA |                            <'----->'| [-] Centuria
+    # CL  |-----------------------------'-----'| [-] Eternal Caledonia
+    # DDR |           <-------->        '     '| [-] East Germany
+    # DEU |----------><--------><-------'-----'| [-] Germany
+    # LOF |                             '<----'| [x] Land formerly founded in the future
+    # LOT |                            <'-----'| [-] Land formerly founded today
+    # SCO |                        <----'-----'| [-] Scotland
+    # GBR |-----------------------><----'-----'| [-] United Kingdom
+    # CG  |-----------------------><-><-'-----'| [-] Volatile Changedonia
+    #     o============================='====='o
+    #
+    # (SOT = Start of time / EOT = End of time / ' ' = Selected Timespan)
     get :upcoming
     assert_response :success
     assert_equal 'LOF',

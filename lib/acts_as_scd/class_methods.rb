@@ -73,6 +73,21 @@ module ActsAsScd
       end
     end
 
+    def before_present
+      before_date(Date.today)
+    end
+    alias_method :past, :before_present
+
+
+    def before_present!
+      begin
+        result = before_present
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.to_a.empty?
+        result
+      end
+    end
+    alias_method :past!, :before_present!
+
     def after_present
       after_date(Date.today)
     end
@@ -162,6 +177,20 @@ module ActsAsScd
     def find_by_identity_at_present_or!(identity,date=nil)
       begin
         result = find_by_identity_at_present_or(identity,date)
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.nil?
+        result
+      end
+    end
+
+    #returns nil if nothing is found
+    def find_by_identity_before(identity, date)
+      before_date(date).where(IDENTITY_COLUMN=>identity).first
+    end
+
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
+    def find_by_identity_before!(identity, date)
+      begin
+        result = find_by_identity_before(identity, date)
         raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.nil?
         result
       end
@@ -381,6 +410,11 @@ module ActsAsScd
         else
           send(:"#{assoc_singular}_iterations").at_date(date)
         end
+      end
+
+      # children before today
+      define_method :"#{assoc}_past" do
+        send(:"#{assoc_singular}_iterations").before_date(Date.today)
       end
 
       # children after today

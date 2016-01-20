@@ -167,6 +167,20 @@ module ActsAsScd
       end
     end
 
+    #returns nil if nothing is found
+    def find_by_identity_after(identity, date)
+      after_date(date).where(IDENTITY_COLUMN=>identity).first
+    end
+
+    # returns exception (ActiveRecord::RecordNotFound) if nothing is found
+    def find_by_identity_after!(identity, date)
+      begin
+        result = find_by_identity_after(identity, date)
+        raise ActiveRecord::RecordNotFound.new(I18n.t('scd.errors.cannot_find_iterations')) if result.nil?
+        result
+      end
+    end
+
     # The first iteration can be defined with a specific start date, but
     # that is in general a bad idea, since it complicates obtaining
     # the first iteration

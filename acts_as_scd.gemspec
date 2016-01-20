@@ -25,4 +25,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'json', '1.8.1'
   s.add_development_dependency 'sqlite3', '1.3.11'
   s.add_development_dependency 'mysql2', '~>0.3.17'
+  s.add_development_dependency 'active_model_serializers', '0.8.1'
 end

@@ -15,8 +15,8 @@ class Country < ActiveRecord::Base
   ### ASSOCIATIONS
   # Countries have cities which also go through iterations
   has_many_iterations_through_identity :cities
-  # Countries may belong to associations which are regular models
-  belongs_to :commercial_association
+  # Countries may belong to continents which are regular models
+  belongs_to :continent
   # Countries may be associated with
   has_many_through_identity :commercial_delegates
 

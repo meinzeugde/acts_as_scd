@@ -1,0 +1,14 @@
+europe:
+  name: Europe
+
+asia:
+  name: Asia
+
+north_america:
+  name: North America
+
+south_america:
+  name: South America
+
+imaginareum:
+  name: Imaginareum

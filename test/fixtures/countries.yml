@@ -4,6 +4,7 @@ caledonia:
   identity: CL
   effective_from: 0
   effective_to: 99999999
+  continent: europe
 
 changedonia_first:
   name: Volatile Changedonia
@@ -11,6 +12,7 @@ changedonia_first:
   identity: CG
   effective_from: 0
   effective_to: 20140302
+  continent: imaginareum
 
 changedonia_second:
   name: Volatile Changedonia
@@ -18,6 +20,7 @@ changedonia_second:
   identity: CG
   effective_from: 20140302
   effective_to: 20140507
+  continent: imaginareum
 
 changedonia_third:
   name: Volatile Changedonia
@@ -25,6 +28,7 @@ changedonia_third:
   identity: CG
   effective_from: 20140507
   effective_to: 99999999
+  continent: imaginareum
 
 de1:
   code: DEU
@@ -33,6 +37,8 @@ de1:
   identity: DEU
   effective_from: 0
   effective_to: 19491007
+  continent: europe
+
 
 de2:
   code: DEU
@@ -41,6 +47,7 @@ de2:
   identity: DEU
   effective_from: 19491007
   effective_to: 19901003
+  continent: europe
 
 de3:
   code: DEU
@@ -49,7 +56,7 @@ de3:
   identity: DEU
   effective_from: 19901003
   effective_to: 99999999
-  commercial_association: bitkom
+  continent: europe
 
 ddr:
   code: DDR
@@ -58,6 +65,7 @@ ddr:
   identity: DDR
   effective_from: 19491007
   effective_to: 19901003
+  continent: europe
 
 uk1:
   code: GBR
@@ -66,6 +74,7 @@ uk1:
   identity: GBR
   effective_from: 0
   effective_to: 20140918
+  continent: europe
 
 uk2:
   code: GBR
@@ -74,6 +83,7 @@ uk2:
   identity: GBR
   effective_from: 20140918
   effective_to: 99999999
+  continent: europe
 
 scotland:
   code: SCO
@@ -82,6 +92,7 @@ scotland:
   identity: SCO
   effective_from: 20140918
   effective_to: 99999999
+  continent: europe
 
 centuria:
   code: CTA
@@ -90,6 +101,7 @@ centuria:
   identity: CTA
   effective_from: 20151201
   effective_to: 21151201
+  continent: imaginareum
 
 landoftoday:
   code: LOT
@@ -98,6 +110,7 @@ landoftoday:
   identity: LOT
   effective_from: <%= Date.today.strftime("%Y%m%d").to_i %>
   effective_to: 99999999
+  continent: imaginareum
 
 landin10days:
   code: LOF
@@ -106,3 +119,4 @@ landin10days:
   identity: LOF
   effective_from: <%= 10.days.since.strftime("%Y%m%d").to_i %>
   effective_to: 99999999
+  continent: imaginareum

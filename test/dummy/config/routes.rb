@@ -63,4 +63,6 @@ Rails.application.routes.draw do
     delete 'destroy_iteration/:id', action: :destroy_iteration, on: :collection
     delete 'terminate/:id', action: :terminate, on: :collection
   end
+
+  resources :continents
 end

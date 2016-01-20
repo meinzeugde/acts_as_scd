@@ -56,6 +56,10 @@ ActiveRecord::Schema.verbose = true
 # would typically change between revisions.
 ActiveRecord::Schema.define do
 
+  create_table :continents, :force => true do |t|
+    t.string  :name
+  end
+
   create_table :countries, :force => true do |t|
     t.string  :code, limit: 3
     t.string  :identity, limit: 3
@@ -63,7 +67,7 @@ ActiveRecord::Schema.define do
     t.integer :effective_to, default: 99999999
     t.string  :name
     t.float   :area
-    t.integer :commercial_association_id
+    t.integer :continent_id
   end
 
   add_index :countries, :identity
@@ -85,10 +89,6 @@ ActiveRecord::Schema.define do
   add_index :cities, :effective_from
   add_index :cities, :effective_to
   add_index :cities, [:effective_from, :effective_to]
-
-  create_table :commercial_associations, :force => true do |t|
-    t.string  :name
-  end
 
   create_table :commercial_delegates, :force => true do |t|
     t.string   :name

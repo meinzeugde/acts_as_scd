@@ -156,7 +156,7 @@ class CountriesController < ApplicationController
   end
 
   def map_countries_params
-    params.require(:country).permit(:code, :name, :area, :commercial_association_id)
+    params.require(:country).permit(:code, :name, :area, :continent_id)
   end
 
   def map_countries_effective_from

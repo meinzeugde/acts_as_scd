@@ -87,13 +87,13 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
     # should find the past periods of all countries
     assert_equal [
-                     countries(:de1),                 # DEU
                      countries(:changedonia_first),   # CG
+                     countries(:de1),                 # DEU
                      countries(:uk1),                 # GBR
                      countries(:ddr),                 # DDR
                      countries(:de2),                 # DEU
                      countries(:changedonia_second),  # CG
-                 ], Country.before_date(Date.today).order(:effective_from).to_a
+                 ], Country.before_date(Date.today).order(:effective_from,:identity).to_a
 
     # should find the past period of a specific country
     assert_equal countries(:uk1), Country.before_date(Date.today).where(identity: 'GBR').first

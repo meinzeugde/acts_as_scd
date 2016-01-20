@@ -95,7 +95,7 @@ edinburgh_scot:
   country_identity: SCO
 
 present_city_of_the_land_of_today:
-  code: LOT
+  code: PCT
   name: Present Capital
   identity: PCT
   effective_from: <%= Date.today.strftime("%Y%m%d").to_i %>
@@ -103,7 +103,7 @@ present_city_of_the_land_of_today:
   country_identity: LOT
 
 upcoming_city_of_the_land_of_today:
-  code: LOT
+  code: PCT
   name: Upcoming Capital
   identity: PCT
   effective_from: <%= 10.days.since.strftime("%Y%m%d").to_i %>

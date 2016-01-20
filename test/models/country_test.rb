@@ -4,7 +4,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
 
   fixtures :all
 
-  test "find_all_by_identity" do
+  test "class-method: find_all_by_identity" do
     #################
     ### FIND ANYTHING
     #################
@@ -34,7 +34,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     end
   end
 
-  test "at_present" do
+  test "class-method: at_present" do
     #################
     ### FIND ANYTHING
     #################
@@ -78,7 +78,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     end
   end
 
-  test "after_date" do
+  test "class-method: after_date" do
     #################
     ### FIND ANYTHING
     #################
@@ -101,5 +101,17 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_kind_of ActiveRecord::Relation, Country.where(identity: 'DEU').after_date(Date.today)
     assert_kind_of ActiveRecord::Relation, Country.after_date(Date.today).where(identity: 'DEU')
   end
+
+  test 'instance-method (association): has_many :cities' do
+    #################
+    ### FIND ANYTHING
+    #################
+    # should return an ActiveRecord::Relation
+    assert_kind_of ActiveRecord::Relation, Country.where(:identity=>'DEU').first.cities_at_present
+    assert_kind_of ActiveRecord::Relation, Country.where(:identity=>'DEU').first.cities_upcoming
+
+    # todo-matteo: write more tests
+  end
+
 
 end

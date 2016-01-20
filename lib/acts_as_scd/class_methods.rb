@@ -369,6 +369,11 @@ module ActsAsScd
         end
       end
 
+      # children after today
+      define_method :"#{assoc}_upcoming" do
+        send(:"#{assoc_singular}_iterations").after_date(Date.today)
+      end
+
       # all children identities
       define_method :"#{assoc_singular}_identities" do
         # send(:"#{assoc}_iterations").select("DISTINCT #{other_model.identity_column_sql}").reorder(other_model.identity_column_sql).pluck(:identity)

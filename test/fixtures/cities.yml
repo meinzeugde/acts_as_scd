@@ -93,3 +93,20 @@ edinburgh_scot:
   effective_from: 20140918
   effective_to: 99999999
   country_identity: SCO
+
+present_city_of_the_land_of_today:
+  code: LOT
+  name: Present Capital
+  identity: PCT
+  effective_from: <%= Date.today.strftime("%Y%m%d").to_i %>
+  effective_to: <%= 10.days.since.strftime("%Y%m%d").to_i %>
+  country_identity: LOT
+
+upcoming_city_of_the_land_of_today:
+  code: LOT
+  name: Upcoming Capital
+  identity: PCT
+  effective_from: <%= 10.days.since.strftime("%Y%m%d").to_i %>
+  effective_to: 99999999
+  country_identity: LOT
+

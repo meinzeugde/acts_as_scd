@@ -23,10 +23,28 @@ class CountriesControllerTest < ActionController::TestCase
     # (SOT = Start of time / EOT = End of time / ' = Selected Date)
     get :index
     assert_response :success
+    countries = json_response.sort_by{|r|r['name']}
     assert_equal 'CTA,CL,DEU,LOT,SCO,GBR,CG',
-                 json_response.sort_by{|r|r['name']}.map{|r|r['identity']}.uniq.join(',')
+                 countries.map{|r|r['identity']}.uniq.join(',')
     assert_equal 'Centuria,Eternal Caledonia,Germany,Land formerly founded today,Scotland,United Kingdom,Volatile Changedonia',
-                 json_response.map{|r|r['name']}.sort.uniq.join(',')
+                 countries.map{|r|r['name']}.uniq.join(',')
+
+    #check serialized associations as defined in CountrySerializer
+    germany = countries[2]
+    germany_cities_at_present = germany['cities_at_present'].sort_by{|r|r['name']}
+    germany_cities_upcoming = germany['cities_upcoming'].sort_by{|r|r['name']}
+    assert_equal 'Berlin,Hamburg,Leipzig',
+                 germany_cities_at_present.map{|r|r['name']}.uniq.join(',')
+    assert_equal '',
+                 germany_cities_upcoming.map{|r|r['name']}.uniq.join(',')
+
+    land_of_today = countries[3]
+    land_of_today_cities_at_present = land_of_today['cities_at_present'].sort_by{|r|r['name']}
+    land_of_today_cities_upcoming = land_of_today['cities_upcoming'].sort_by{|r|r['name']}
+    assert_equal 'Present Capital',
+                 land_of_today_cities_at_present.map{|r|r['name']}.uniq.join(',')
+    assert_equal 'Upcoming Capital',
+                 land_of_today_cities_upcoming.map{|r|r['name']}.uniq.join(',')
   end
 
   test "should get all countries at specific date in the past" do
